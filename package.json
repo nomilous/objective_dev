@@ -1,5 +1,5 @@
 {
-  "name": "objective-spec",
+  "name": "objective-dev",
   "version": "0.0.1",
   "description": "",
   "main": "./lib/index.js",
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/nomilous/objective-spec.git"
+    "url": "git://github.com/nomilous/objective-dev.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nomilous/objective-spec/issues"
+    "url": "https://github.com/nomilous/objective-dev/issues"
   },
-  "homepage": "https://github.com/nomilous/objective-spec"
+  "homepage": "https://github.com/nomilous/objective-dev"
 }

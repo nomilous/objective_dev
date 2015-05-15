@@ -1,5 +1,9 @@
 {normalize} = require 'path'
 
+fs = require 'fs'
+
+shared = require './shared'
+
 module.exports = dev = 
 
     testDir: 'test'
@@ -8,7 +12,16 @@ module.exports = dev =
 
     compileTo: undefined
 
-    init: ({pipe, prompt}, callback) ->
+    init: ({pipe}, callback) ->
+
+        pipe.on 'objective.init', (tools, next) ->
+
+            shared[tool] = tools[tool] for tool of tools
+
+            shared.dev = dev
+
+            next()
+
 
         pipe.on 'prompt.commands.register.ask', (command, next) ->
 
@@ -16,13 +29,11 @@ module.exports = dev =
 
                 description: 'Create new module in the current project.'
 
-                run: (args, callback) ->
-                    
-                    callback()
+                run: require('./commands/create_module')
 
                 help: """
 
-                Usage: dev.createModule #{dev.testDir}/path/to/module_name
+                Usage: dev.createModule #{dev.testDir}/path/to/module_name [templateName]
 
                 Creates the '#{dev.testDir}' file and the corresponding '#{dev.sourceDir}' file.
 
@@ -42,48 +53,87 @@ module.exports = dev =
                         module_name.js will be injectable as ModuleName
                         (provided that it is unique project-wide)
 
+                If templateName is specified the corresponding template will be used.
+
+                    ie.
+
+                        ~/.objective/templates/dev/templateName_spec.js
+
+
+                NOTE: The templates are only installed upon registration. (--register)
+
                 """
 
-                autoComplete:
+                autoComplete: (args, callback) ->
 
-                    type: 'path'
-
-                    startIn: normalize dev.testDir + '/'
-
-                    ignoreFiles: true
+                    return callback null, null if args.length > 2
 
 
-            command.create 'dev.destroyModule',
+                    if args.length == 1
 
-                description: 'Deletes module from the current project.'
+                        return callback null,
 
-                run: (args, callback) ->
+                            type: 'path'
 
-                    callback()
+                            startIn: normalize dev.testDir + '/'
 
-            command.create 'dev.killModule',
+                            onlyDirectories: true
 
-                description: 'Deletes module and performs git rm.'
 
-                run: (args, callback) ->
 
-                    callback()
+                    if args.length == 2
 
-            command.create 'dev.testModule',
+                        try
+                        
+                            directory = fs.readdirSync process.env.HOME + '/.objective/templates/dev'
 
-                description: 'Test a specific module.'
+                            matches = []
 
-                run: (args, callback) ->
+                            for file in directory
 
-                    callback()
+                                if file.match new RegExp "_spec.#{shared.language}"
 
-            command.create 'dev.testAll',
+                                    matches.push file.replace "_spec.#{shared.language}", ''
 
-                description: 'Test all modules.'
+                            callback null, matches
 
-                run: (args, callback) ->
+                        catch
 
-                    callback()
+                            callback null, null
+
+
+
+            # command.create 'dev.destroyModule',
+
+            #     description: 'Deletes module from the current project.'
+
+            #     run: (args, callback) ->
+
+            #         callback()
+
+            # command.create 'dev.killModule',
+
+            #     description: 'Deletes module and performs git rm.'
+
+            #     run: (args, callback) ->
+
+            #         callback()
+
+            # command.create 'dev.testModule',
+
+            #     description: 'Test a specific module.'
+
+            #     run: (args, callback) ->
+
+            #         callback()
+
+            # command.create 'dev.testAll',
+
+            #     description: 'Test all modules.'
+
+            #     run: (args, callback) ->
+
+            #         callback()
 
             next()
 

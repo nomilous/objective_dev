@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nomilous/objective-dev/issues"
   },
-  "homepage": "https://github.com/nomilous/objective-dev"
+  "homepage": "https://github.com/nomilous/objective-dev",
+  "dependencies": {
+    "uuid": "^2.0.1"
+  }
 }

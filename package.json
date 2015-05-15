@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/nomilous/objective-dev",
   "dependencies": {
+    "mkpath": "^0.1.0",
     "uuid": "^2.0.1"
   }
 }

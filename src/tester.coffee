@@ -1,11 +1,28 @@
-global.context = (descr, callback) ->
+
+
+global.before = (fn) ->
+
+global.beforeEach = (fn) ->
+
+global.afterEach = (fn) ->
+
+global.afterAll = (fn) ->
+
+global.context = (descr, fn) ->
+
+    console.log caller: caller()
 
     console.log "context '#{descr}' not implemented"
 
-    callback() if callback?
+    fn() if fn?
 
-global.it = (descr, callback) ->
+    return 'moo'
+
+global.describe = global.context
+
+global.it = (descr, fn) ->
 
     console.log "it '#{descr}' not implemented"
 
-    callback() if callback?
+    fn() if fn?
+

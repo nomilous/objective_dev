@@ -20,9 +20,9 @@ module.exports = dev = shared.dev =
 
         pipe.on 'prompt.commands.register.ask', (command, next) ->
 
-            command.create 'dev.createModule',
+            command.create 'createModule',
 
-                description: 'Create new module in the current project.'
+                description: '(dev) Create new module in the current project.'
 
                 run: require('./commands/create_module')
 
@@ -96,22 +96,22 @@ module.exports = dev = shared.dev =
 
                             callback null, null
 
-            # command.create 'dev.renameModule',
+            command.create 'renameModule',
 
-            #     description: 'Deletes module from the current project.'
+                description: '(dev) Deletes module from the current project.'
 
-            #     run: (args, callback) ->
+                run: (args, callback) ->
 
-            #         callback()     
+                    callback()
 
 
-            # command.create 'dev.destroyModule',
+            command.create 'destroyModule',
 
-            #     description: 'Deletes module from the current project.'
+                description: '(dev) Deletes module from the current project.'
 
-            #     run: (args, callback) ->
+                run: (args, callback) ->
 
-            #         callback()
+                    callback()
 
             # command.create 'dev.killModule',
 
@@ -121,75 +121,53 @@ module.exports = dev = shared.dev =
 
             #         callback()
 
-            # command.create 'dev.testModule',
+            command.create 'testModule',
 
-            #     description: 'Test a specific module.'
+                description: '(dev) Test a specific module.'
 
-            #     run: (args, callback) ->
+                run: (args, callback) ->
 
-            #         callback()
+                    callback()
 
-            # command.create 'dev.testAll',
+            command.create 'testAll',
 
-            #     description: 'Test all modules.'
+                description: '(dev) Test all modules.'
 
-            #     run: (args, callback) ->
+                run: (args, callback) ->
 
-            #         callback()
-
-            next()
-
-
-        pipe.on 'files.recurse.start', ({path}, next) ->
-
-            # console.log start: path
+                    callback()
 
             next()
 
-        pipe.on 'files.recurse.entering', ({path}, next) ->
 
-            # console.log entering: path
+        # pipe.on 'files.recurse.start', ({path}, next) ->
 
-            next()
+        #     # console.log start: path
 
-        pipe.on 'files.recurse.found', ({path}, next) ->
+        #     next()
 
-            next()
+        # pipe.on 'files.recurse.entering', ({path}, next) ->
 
-            # return next() unless path.indexOf(dev.testDir) == 0
-            # return next() if isBinaryFile path
+        #     # console.log entering: path
 
-            # try
-                
-            #     content = fs.readFileSync(path).toString()
+        #     next()
 
-                
+        # pipe.on 'files.recurse.found', ({path}, next) ->
 
-            #     if content.match /require\(['"]\.\.\/lib\/objective['"]\)/
+        #     next()
 
-            #         console.log "Loading objective at '#{path}'"
 
-            #         require process.cwd() + '/' + path
+        # pipe.on 'files.recurse.end', (data, next) ->
 
-            #     next()
+        #     # console.log end: data
 
-            # catch e
-                
-            #     console.log e.toString()
-            #     next()
-            
+        #     next()
 
-        pipe.on 'files.recurse.end', (data, next) ->
+        # pipe.on 'files.recurse.error', (error, next) ->
 
-            # console.log end: data
+        #     # console.log error: error
 
-            next()
-
-        pipe.on 'files.recurse.error', (error, next) ->
-
-            # console.log error: error
-
-            next()
+        #     next()
 
 
         callback()

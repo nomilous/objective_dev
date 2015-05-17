@@ -1,5 +1,3 @@
-shared = require '../shared'
-
 uuid = require 'uuid'
 
 fs = require 'fs'
@@ -8,17 +6,15 @@ path = require 'path'
 
 mkpath = require 'mkpath'
 
-
 module.exports = CreateModule = (args, callback) ->
-
 
     tpath = args[0]
 
-    lang = shared.language
+    lang = 'coffee'
 
-    testDir = shared.dev.testDir
+    testDir = dev.testDir
 
-    sourceDir = shared.dev.sourceDir
+    sourceDir = dev.sourceDir
 
     ext = tpath.split('.').pop()
 
@@ -61,9 +57,6 @@ module.exports = CreateModule = (args, callback) ->
 
         return callback new Error 'File already exists at ' + tpath
 
-
-    console.log 'TODO: online creation'
-    console.log 'TODO: warn on collision'
     
     # if shared.program.offline
 
@@ -72,21 +65,51 @@ module.exports = CreateModule = (args, callback) ->
     spath = tpath.replace new RegExp("^#{testDir}"), sourceDir
     spath = spath.replace new RegExp("_#{testDir}\."), '.'
 
+    # console.log objective.root
 
     newObjective = 
 
         uuid: uuid.v4()
         title: moduleName
         description: ''
-        private: shared.objective.private # inherit from parent objective
+        private: objective.root.private # inherit from parent objective
 
     template = args[1] || 'default'
+
+    # watch new files src and spec
+
+    watch = (file) ->
+
+        fs.watchFile file, interval: 100, (curr, prev) ->
+
+            return unless prev.mtime < curr.mtime
+
+            objective.pipe.emit 'files.watch.reload?', file, (err) ->
+
+                return if err?
+
+                try
+
+                    filename = process.cwd() + '/' + file
+                    delete require.cache[filename]
+                    require filename
+
+                catch e
+
+                    console.log "\nError loading '#{filename}'"
+                    console.log e.stack
+
 
     CreateModule.writeSpecFile tpath, template, lang, newObjective, (e) ->
 
         return callback e if e?
 
+        watch tpath
+
+
         CreateModule.writeSourceFile spath, moduleName, lang, newObjective, (e) ->
+
+            watch spath unless e?
 
             callback e
 

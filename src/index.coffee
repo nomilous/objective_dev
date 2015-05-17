@@ -4,7 +4,7 @@ fs = require 'fs'
 
 shared = require './shared'
 
-module.exports = dev = 
+module.exports = dev = shared.dev =
 
     testDir: 'test'
 
@@ -12,16 +12,9 @@ module.exports = dev =
 
     compileTo: undefined
 
-    init: ({pipe}, callback) ->
+    init: (callback) ->
 
-        pipe.on 'objective.init', (tools, next) ->
-
-            shared[tool] = tools[tool] for tool of tools
-
-            shared.dev = dev
-
-            next()
-
+        {pipe} = objective
 
         pipe.on 'prompt.commands.register.ask', (command, next) ->
 
@@ -101,6 +94,13 @@ module.exports = dev =
 
                             callback null, null
 
+            # command.create 'dev.renameModule',
+
+            #     description: 'Deletes module from the current project.'
+
+            #     run: (args, callback) ->
+
+            #         callback()     
 
 
             # command.create 'dev.destroyModule',
@@ -152,9 +152,30 @@ module.exports = dev =
 
         pipe.on 'files.recurse.found', ({path}, next) ->
 
-            # console.log found: path
-
             next()
+
+            # return next() unless path.indexOf(dev.testDir) == 0
+            # return next() if isBinaryFile path
+
+            # try
+                
+            #     content = fs.readFileSync(path).toString()
+
+                
+
+            #     if content.match /require\(['"]\.\.\/lib\/objective['"]\)/
+
+            #         console.log "Loading objective at '#{path}'"
+
+            #         require process.cwd() + '/' + path
+
+            #     next()
+
+            # catch e
+                
+            #     console.log e.toString()
+            #     next()
+            
 
         pipe.on 'files.recurse.end', (data, next) ->
 

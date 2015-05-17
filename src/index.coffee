@@ -4,6 +4,8 @@ fs = require 'fs'
 
 shared = require './shared'
 
+require './tester'
+
 module.exports = dev = shared.dev =
 
     testDir: 'test'

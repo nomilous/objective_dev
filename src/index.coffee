@@ -4,9 +4,11 @@ fs = require 'fs'
 
 shared = require './shared'
 
-require './tester'
+tester = require './tester'
 
 module.exports = dev = shared.dev =
+
+    before: tester.before
 
     testDir: 'test'
 

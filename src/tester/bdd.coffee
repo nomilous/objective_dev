@@ -1,5 +1,21 @@
 # TODO: .only on description, context
 
+try
+    
+    {pipe} = objective
+    pipe.createEvent 'dev.test.before.all'
+    pipe.createEvent 'dev.test.after.all'
+    pipe.createEvent 'dev.test.before.each'
+    pipe.createEvent 'dev.test.after.each'
+
+    {logger} = objective
+    {info, debug, error} = logger
+
+catch
+    
+    console.log 'not running objective'
+    process.exit 1
+
 {When, sequence, deferred, util} = require 'also'
 
 injector = require './injector'
@@ -14,7 +30,7 @@ module.exports.before = (config) ->
         
     delete tree[key] for key of tree
 
-    console.log 'Loading tests...'
+    debug 'loading tests...'
 
     running = When.defer()
 
@@ -36,21 +52,28 @@ createNode = (parent, type, str, fn, skip) ->
         return parts unless parent.parent?
         return recurse parent.parent, parts
 
-    try path = '/' + (recurse parent, [str]).reverse().join '/'
+    if parent?
 
-    hooks:
-        beforeAll: []
-        beforeEach: []
-        afterEach: []
-        afterAll: []
-    type: type
-    str: str
-    fn: fn || ->
-    skip: skip
-    pending: not fn?
-    children: []
-    parent: parent
-    path: path
+        namePath = recurse(parent, [str]).reverse()
+
+    node =
+
+        hooks:
+            beforeAll: []
+            beforeEach: []
+            afterEach: []
+            afterAll: []
+        type: type
+        str: str
+        fn: fn || ->
+        skip: skip
+        pending: not fn?
+        children: []
+        parent: parent
+        path: namePath
+        error: null
+
+    return node
 
 begin = -> return running?
 
@@ -59,153 +82,232 @@ end = -> return running.promise
 
 runTests = ->
 
-    console.log 'Running tests...'
+    pipe.emit 'dev.test.before.all', tree: tree, (err) ->
 
-    recurse = (pointer, functions = []) ->
+        if err? then return running.reject err
 
-        {parent, children, type} = pointer
+        debug 'running tests...'
 
-        if parent? and type == 'it' and (not tree.only or pointer.only)
+        recurse = (pointer, functions = []) ->
 
-            recurse2 = (parent, functions = []) ->
+            debug "recursing #{pointer.str}"
 
-                functions.push fn: fn, node: pointer, type: 'beforeEach' for fn in parent.hooks.beforeEach.reverse()
+            {parent, children, type} = pointer
 
-                return functions unless parent.parent?
+            if parent? and type == 'it' and (not tree.only or pointer.only)
 
-                return recurse2 parent.parent, functions
+                recurse2 = (parent, functions = []) ->
 
-            functions.push ref for ref in recurse2(parent).reverse()
+                    functions.push fn: fn, node: pointer, type: 'beforeEach' for fn in parent.hooks.beforeEach.reverse()
 
-        functions.push fn: fn, node: pointer, type: 'beforeAll' for fn in pointer.hooks.beforeAll
+                    return functions unless parent.parent?
 
-        unless pointer.skip
+                    return recurse2 parent.parent, functions
 
-            if type == 'it'
+                functions.push ref for ref in recurse2(parent).reverse()
 
-                if tree.only 
+            functions.push fn: fn, node: pointer, type: 'beforeAll' for fn in pointer.hooks.beforeAll
 
-                    functions.push fn: pointer.fn, node: pointer, type: 'test' if pointer.only
+            unless pointer.skip
 
-                else
+                if type == 'it'
 
-                    functions.push fn: pointer.fn, node: pointer, type: 'test'
+                    if tree.only 
 
-            else recurse child, functions for child in children
+                        functions.push fn: pointer.fn, node: pointer, type: 'test' if pointer.only
 
-        if parent? and type == 'it' and (not tree.only or pointer.only)
+                    else
 
-            recurse3 = (parent, functions = []) ->
+                        functions.push fn: pointer.fn, node: pointer, type: 'test'
 
-                functions.push fn: fn, node: pointer, type: 'afterEach' for fn in parent.hooks.afterEach
+                else recurse child, functions for child in children
 
-                return functions unless parent.parent?
+            if parent? and type == 'it' and (not tree.only or pointer.only)
 
-                return recurse3 parent.parent, functions
+                recurse3 = (parent, functions = []) ->
 
-            functions.push ref for ref in recurse3 parent
+                    functions.push fn: fn, node: pointer, type: 'afterEach' for fn in parent.hooks.afterEach
 
-        functions.push fn: fn, node: pointer, type: 'afterAll' for fn in pointer.hooks.afterAll
+                    return functions unless parent.parent?
 
-        return unless type == 'root'
+                    return recurse3 parent.parent, functions
 
-        context = {}
+                functions.push ref for ref in recurse3 parent
 
-        sequence(
+            functions.push fn: fn, node: pointer, type: 'afterAll' for fn in pointer.hooks.afterAll
 
-            for test in functions
+            return unless type == 'root'
 
-                do (test) -> deferred ({resolve, reject, notify}) ->
+            context = {}
 
-                    try
+            sequence(
 
-                        timeout = undefined
+                for test in functions
 
-                        done = undefined
-
-                        return resolve() if test.node.pending
-
-                        return resolve() if test.node.skip
-
-                        test.args = util.argsOf test.fn
-
-                        context.test = test
-
-                        tooSlow = ->
-
-                            console.log 'timeout!'
-
-                            resolve()
-
-                        context.timeout = (value) ->
-
-                            return unless timeout?
-
-                            return unless typeof value == 'number'
-
-                            clearTimeout timeout
-
-                            timeout = setTimeout tooSlow, value
-
-                        doWithArgs = []
-
-                        for arg in test.args
-
-                            if arg == 'done'
-
-                                timeout = setTimeout tooSlow, 2000
-
-                                doWithArgs.push done = ->
-
-                                    clearTimeout timeout
-
-                                    resolve()
-                            else
-
-                                doWithArgs.push injector.load arg
+                    do (test) -> deferred ({resolve, reject, notify}) ->
 
                         try
 
-                            test.fn.apply context, doWithArgs
+                            timeout = undefined
 
-                            resolve() unless done?
+                            done = undefined
+
+                            return resolve() if test.node.pending
+
+                            return resolve() if test.node.skip
+
+                            test.argNames = util.argsOf test.fn
+
+                            context.test = test
+
+                            tooSlow = ->
+
+                                console.log 'timeout!'
+
+                                resolve()
+
+                            context.timeout = (value) ->
+
+                                return unless timeout?
+
+                                return unless typeof value == 'number'
+
+                                clearTimeout timeout
+
+                                timeout = setTimeout tooSlow, value
+
+                            doWithArgs = []
+
+                            for arg in test.argNames
+
+                                if arg == 'done'
+
+                                    timeout = setTimeout tooSlow, 2000
+
+                                    doWithArgs.push done = ->
+
+                                        clearTimeout timeout
+
+                                        pipe.emit 'dev.test.after.each', test: test, (err) ->
+
+                                            if err? then return reject err
+
+                                            resolve()
+
+                                else
+
+                                    doWithArgs.push injector.load arg
+
+                            test.arguments = {}
+
+                            i = 0
+
+                            for arg in test.argNames
+                                
+                                test.arguments[arg] = doWithArgs[i++]
+
+                            test.error = null
 
                         catch e
 
-                            clearTimeout timeout if timeout?
-
-                            if test.type == 'test'
-
-                                console.log testError: e.toString()
-                                return resolve()
-
                             return reject e
 
-                    catch e
+                        pipe.emit 'dev.test.before.each', test: test, (err) ->
 
-                        return reject e
+                            # perhaps only start test timeout after before.each pipe
 
-        ).then(
+                            if err?
 
-            (result) ->
+                                clearTimeout timeout if timeout?
 
-                running.resolve result
-                running = undefined
-                tree = undefined
+                                return reject err
 
-            (error) ->
+                            try
 
-                running.reject error
-                running = undefined
-                tree = undefined
+                                debug "running '#{test.type}' at '#{test.node.str}'"
 
-            (notify) ->
+                                test.fn.apply context, doWithArgs
 
-                running.notify notify
+                                return if done?
 
-        )
+                                pipe.emit 'dev.test.after.each', test: test, (err) ->
 
-    recurse tree
+                                    if err? then return reject err
+
+                                    resolve()
+
+                            catch e
+
+                                clearTimeout timeout if timeout?
+
+                                test.error = e
+
+                                test.node.error = e if test.type == 'test'
+
+                                pipe.emit 'dev.test.after.each', test: test, (err) ->
+
+                                    if err? then return reject err
+
+                                    # failing tests dont stop the entire chain
+
+                                    return resolve() if test.type == 'test'
+
+                                    # failing hooks do
+
+                                    return reject e
+
+
+            ).then(
+
+                (result) ->
+
+                    pipe.emit 'dev.test.after.all',
+
+                        error: null
+                        tree: tree
+                        functions: functions
+
+                        (err) ->
+
+                            if err?
+
+                                running.reject err
+                                running = undefined
+                                tree = undefined
+                                return
+
+                            running.resolve result
+                            running = undefined
+                            tree = undefined
+
+                (error) ->
+
+                    pipe.emit 'dev.test.after.all', 
+
+                        error: error
+                        tree: tree
+                        functions: functions
+
+                        (err) ->
+
+                            if err?
+
+                                running.reject err
+                                running = undefined
+                                tree = undefined
+                                return
+
+                            running.reject error
+                            running = undefined
+                            tree = undefined
+
+                (notify) ->
+
+                    running.notify notify
+
+            )
+
+        recurse tree
 
 
 
@@ -273,7 +375,7 @@ global.after = (fn) ->
 
     return end()
 
-global.context = (str, fn) ->
+context = (str, fn) ->
 
     return unless begin()
 
@@ -297,7 +399,7 @@ global.context = (str, fn) ->
 
     return end()
 
-global.xcontext = (str, fn) ->
+xcontext = (str, fn) ->
 
     return unless begin()
 
@@ -321,53 +423,13 @@ global.xcontext = (str, fn) ->
 
     return end()
 
-global.describe = (str, fn) ->
+global.context = context
 
-    return unless begin()
+global.xcontext = xcontext
 
-    skip = false
+global.describe = context
 
-    unless fn?
-
-        pointer.children.push createNode pointer, 'describe', str, fn, skip
-
-        return end()
-
-    prevPointer = pointer
-
-    pointer.children.push createNode pointer, 'describe', str, fn, skip
-
-    pointer = pointer.children[-1..][0]
-
-    fn()
-
-    pointer = prevPointer
-
-    return end()
-
-global.xdescribe = (str, fn) ->
-
-    return unless begin()
-
-    skip = true
-
-    unless fn?
-
-        pointer.children.push createNode pointer, 'describe', str, fn, skip
-
-        return end()
-
-    prevPointer = pointer
-
-    pointer.children.push createNode pointer, 'describe', str, fn, skip
-
-    pointer = pointer.children[-1..][0]
-
-    fn()
-
-    pointer = prevPointer
-
-    return end()
+global.xdescribe = xcontext
 
 global.it = (str, fn) ->
 

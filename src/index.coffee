@@ -16,6 +16,8 @@ module.exports = dev = shared.dev =
 
     compileTo: undefined
 
+    reporters: require './reporters'
+
     init: (callback) ->
 
         {pipe} = objective

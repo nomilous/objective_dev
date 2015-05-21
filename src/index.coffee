@@ -14,6 +14,10 @@ module.exports = dev = shared.dev =
 
     sourceDir: 'lib'
 
+    walkDepth: 3
+
+    walkWidth: 3
+
     compileTo: undefined
 
     reporters: require './reporters'
@@ -22,7 +26,7 @@ module.exports = dev = shared.dev =
 
         {pipe} = objective
 
-        pipe.on 'prompt.commands.register.ask', (command, next) ->
+        pipe.on 'prompt.commands.register.ask', (command) ->
 
             command.create 'createModule',
 
@@ -140,8 +144,6 @@ module.exports = dev = shared.dev =
                 run: (args, callback) ->
 
                     callback()
-
-            next()
 
 
         # pipe.on 'files.recurse.start', ({path}, next) ->

@@ -18,6 +18,14 @@ catch
 
 {When, sequence, deferred, util} = require 'also'
 
+{logger} = objective
+
+{TODO} = logger
+
+TODO 'do chai asserts work?'
+
+TODO 'done called multiple times'
+
 injector = require './injector'
 
 running = undefined
@@ -112,7 +120,7 @@ runTests = ->
 
                 if type == 'it'
 
-                    if tree.only 
+                    if tree.only
 
                         functions.push fn: pointer.fn, node: pointer, type: 'test' if pointer.only
 
@@ -162,9 +170,21 @@ runTests = ->
 
                             tooSlow = ->
 
-                                console.log 'timeout!'
+                                e = new Error 'Timeout'
 
-                                resolve()
+                                e.name = 'Timeout'
+
+                                test.error = e
+
+                                pipe.emit 'dev.test.after.each', test: test, (err) ->
+
+                                    if err? then return reject err
+
+                                    return resolve() if test.type == 'test'
+
+                                    # timeout on hook fails entire run
+
+                                    reject e
 
                             context.timeout = (value) ->
 
@@ -393,7 +413,19 @@ context = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
-    fn()
+    pointer.argNames = util.argsOf fn
+
+    pointer.arguments = {}
+
+    doWithArgs = []
+
+    for arg in pointer.argNames
+
+        doWithArgs.push ument = injector.load arg
+
+        pointer.arguments[arg]=ument
+
+    fn.apply null, doWithArgs
 
     pointer = prevPointer
 
@@ -417,7 +449,19 @@ xcontext = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
-    fn()
+    pointer.argNames = util.argsOf fn
+
+    pointer.arguments = {}
+
+    doWithArgs = []
+
+    for arg in pointer.argNames
+
+        doWithArgs.push ument = injector.load arg
+
+        pointer.arguments[arg]=ument
+
+    fn.apply null, doWithArgs
 
     pointer = prevPointer
 

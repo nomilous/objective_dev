@@ -57,6 +57,8 @@ module.exports.load = (name) ->
             tries[2] += caps[i] if i > 0
             tries[2] += parts[i].toLowerCase()
 
+        tries.length = 1 if tries[0] == tries[1] == tries[2]
+
         matches = []
 
         for possible in tries
@@ -87,11 +89,15 @@ module.exports.load = (name) ->
 
         if matches.length == 0
 
-            throw new Error 'No injection match for #{name}'
+            e = new Error "No injection match for '#{name}'"
+            e.matches = matches
+            throw e
 
         if matches.length > 1
 
-            throw new Error 'Multiple injection matches for #{name}'
+            e = new Error "Multiple injection matches for '#{name}'"
+            e.matches = matches
+            throw e
 
     return expector.create require name
 

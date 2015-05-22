@@ -14,14 +14,66 @@ config = undefined
 
 expector = require './expector'
 
+module.exports.mocks = {}
+
 
 module.exports.before = (conf) ->
 
     config = conf
 
 
+module.exports.register = (name, object) ->
+
+    try 
+
+        test = dev.running.test
+        type = test.type
+        node = test.node
+
+    unless module.exports.mocks[name]?
+
+        return module.exports.mocks[name] =
+
+            object: object
+            createdIn: type
+            createdAt: node
+
+    fail = (msg) ->
+
+        e = new Error msg
+        e.name = 'InjectionError'
+        throw e
+
+    return fail("Cannot overwrite existing alias '#{name}'") unless test? && type? && node?
+
+    createdIn = module.exports.mocks[name].createdIn
+    createdAt = module.exports.mocks[name].createdAt
+
+    if createdAt.id == node.id
+
+        return fail "Cannot overwrite alias '#{name}' created in Sibling test node."
+
+
+    recurse = (parent) ->
+
+        if createdAt.id == parent.id
+
+            return fail "Cannot overwrite alias '#{name}' created in Ancestor test node."
+
+        recurse parent.parent if parent.parent?
+
+    recurse node.parent if node.parent?
+
+    module.exports.mocks[name] =
+
+        object: object
+        createdIn: type
+        createdAt: node
+
 
 module.exports.load = (name) ->
+
+    if module.exports.mocks[name]? then return module.exports.mocks[name].object
 
     if name == 'Subject' or name == 'subject'
 

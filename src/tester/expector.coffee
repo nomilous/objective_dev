@@ -1,5 +1,7 @@
 shortid = require 'shortid'
 
+injector = require './injector'
+
 {pipe, logger} = objective
 
 {debug, error, info, TODO} = logger
@@ -8,7 +10,7 @@ TODO 'how to create multiple expectations with does over and over'
 
 TODO 'reporter function/class name'
 
-entities = {}
+module.exports.entities = entities = {}
 
 config = undefined
 
@@ -18,66 +20,181 @@ module.exports.before = (conf) ->
 
 module.exports.create = (object) ->
 
+    expectorName = 'does'
+
+    try expectorName = dev.expectorName
+
     try Object.defineProperty object, '$$id', value: shortid.generate(), writable: false
 
-    object.does = (functions) ->
+    upperExpectorName = expectorName[0].toUpperCase() + expectorName[1..]
 
-        for name of functions
+    if upperExpectorName == expectorName
 
-            do (name) ->
+        upperExpectorName = '$' + upperExpectorName
 
-                o = entities[object.$$id] ||= 
+    object[upperExpectorName] = (args...) ->
 
-                    object: object
-                    expectations: {}
-                    originals: {}
+        ### .Does (for expectations on class methods) ###
 
-                type = 'mock'
+        args.unshift true
 
-                fn = functions[name]
+        object[expectorName].apply null, args
 
-                if name.match /^\$\$/
+    pendingContexts = []
 
-                    type = 'spy' 
+    object[expectorName] = (onClass, args...) ->
 
-                    name = name[2..]
+        ### .does (for expectations on instance methods) ###
 
-                o.expectations[name] ||= []
+        pendingContexts.length = 0 # reset
 
-                o.expectations[name].push type: type, fn: fn
+        unless typeof onClass == 'boolean'
 
-                o.originals[name] ||= object[name] || -> ### NO_ORIGINAL ###
+            args.unshift onClass
 
-                if object[name]?
+            onClass = false
 
-                    return if object[name].toString().match /EXPECTATION_STUB/
+        for functions in args
 
-                object[name] = ->
+            for name of functions
 
-                    ### EXPECTATION_STUB ###
+                do (name) ->
 
-                    try 
+                    n = object.constructor.name
+                    objectType = 'object'
 
-                        {type, fn} = entities[object.$$id].expectations[name].shift()
+                    if name == 'constructor'
 
-                    catch
-
-                        e = new Error "Too many calls to function '#{name}()'"
+                        e = new Error "Cannot manipulate constructor."
                         e.name = 'ExpectationError'
                         throw e
 
-                    if type == 'spy'
+                    try
 
-                        original = entities[object.$$id].originals[name] || ->
+                        n = object.prototype.constructor.name
+                        objectType = 'class' # testing on future instance via prototype
 
-                    fn.apply object, arguments
+                    o = entities[object.$$id] ||= 
 
-                    original.apply object, arguments if original?
+                        type: objectType
+                        name: object.name || n
+                        object: object
+                        expectations: {}
+                        originals: {}
+
+                    type = 'mock'
+
+                    fn = functions[name]
+
+                    if name.match /^\$\$/
+
+                        type = 'spy' 
+
+                        name = name[2..]
+
+                    o.expectations[name] ||= []
+
+                    o.expectations[name].push type: type, fn: fn, context: null
+
+                    pendingContexts.push o.expectations[name][-1..][0] # for .with()
+
+                    o.originals[name] ||= {}
+
+                    o.originals[name][onClass] ||= {}
+
+                    o.originals[name][onClass].type = objectType
+
+                    if objectType == 'class'
+
+                        if onClass
+
+                            o.originals[name][onClass].fn = object[name] || -> ### NO_ORIGINAL ###
+
+                        else
+
+                            o.originals[name][onClass].fn = object.prototype[name] || -> ### NO_ORIGINAL ###
+
+                    else
+
+                        o.originals[name][onClass].fn = object[name] || -> ### NO_ORIGINAL ###
+
+                    
+
+                    if object[name]?
+
+                        return if object[name].toString().match /EXPECTATION_STUB/
 
 
+                    stub = ->
 
+                        ### EXPECTATION_STUB ###
+
+                        TODO 'dont throw Too many calls, report number as exception after instead'
+
+                        try
+
+                            {type, fn, context} = entities[object.$$id].expectations[name].shift()
+
+                        catch
+
+                            e = new Error "Too many calls to function '#{name}()'"
+                            e.name = 'ExpectationError'
+                            throw e
+
+                        if type == 'spy'
+
+                            original = entities[object.$$id].originals[name][onClass].fn || ->
+
+                        result = fn.apply context || object, arguments
+
+                        result = original.apply context || object, arguments if original?
+
+                        return result
+
+
+                    return object[name] = stub unless objectType == 'class'
+
+                    return object[name] = stub if onClass == true
+
+                    object.prototype[name] = stub
+
+        as: (context) ->
+
+            for expectation in pendingContexts
+
+                expectation.context = context
 
     return object
+
+
+module.exports.mock = (args...) ->
+
+    if typeof args[0] == 'string'
+
+        name = args[0]
+        
+        object = args[1] || {}
+
+    else
+
+        object = args[0]
+
+    result = module.exports.create object
+
+    if name?
+
+        injector.register name, result
+
+    return result
+
+
+Object.defineProperty Object.prototype, 'mock',
+    
+    value: module.exports.mock
+
+    configurable: false
+
+
 
 pipe.on 'dev.test.after.each', ({test}) ->
 
@@ -93,7 +210,7 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
     for id of entities
 
-        {object, expectations, originals} = entities[id]
+        {object, expectations} = entities[id]
 
         report[object.toString()] ||= {}
 
@@ -128,23 +245,28 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
     debug 'clear expectations unless created in beforeAll?'
 
-    for id of entities
-
-        {object, originals} = entities[id]
-
-        for name of originals
-
-            fn = originals[name]
-
-            if fn.toString().match /NO_ORIGINAL/
-
-                delete object[name]
-
-                continue 
-
-            object[name] = fn
+    TODO 'EXPECTOR CLEARUP'
 
     delete entities[id] for id of entities
+
+
+    # for id of entities
+
+    #     {object, originals} = entities[id]
+
+    #     for name of originals
+
+    #         fn = originals[name].fn
+
+    #         if fn.toString().match /NO_ORIGINAL/
+
+    #             delete object[name]
+
+    #             continue 
+
+    #         object[name] = fn
+
+    # delete entities[id] for id of entities
 
 
 

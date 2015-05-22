@@ -10,6 +10,8 @@ EOL = require('os').EOL
 TODO 'Final stats after test (or test all)'
 TODO 'runs initiated by file changes may overlap, fix (perhaps {noOvertake} pipe on change watcher'
 TODO 'test timeouts error'
+TODO 'reporter calls null tests pending - actually bdd does it'
+TODO 'only walk from test onward, or ignore objective-dev'
 
 fs = require 'fs'
 

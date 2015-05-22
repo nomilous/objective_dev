@@ -11,10 +11,18 @@ try
     {logger} = objective
     {info, debug, error} = logger
 
+    # dev.test = 
+
+    #     tree: null
+    #     recursingNode: null
+    #     running: null
+
 catch
     
     console.log 'not running objective'
     process.exit 1
+
+{generate} = require 'shortid'
 
 {When, sequence, deferred, util} = require 'also'
 
@@ -48,6 +56,14 @@ module.exports.before = (config) ->
 
     pointer = tree
 
+    dev.tree = tree
+
+    dev.running = {}
+
+    dev.recursing = {}
+
+    dev.recursing.node = pointer
+
     tree.only = false
 
     return true
@@ -66,6 +82,7 @@ createNode = (parent, type, str, fn, skip) ->
 
     node =
 
+        id: generate()
         hooks:
             beforeAll: []
             beforeEach: []
@@ -73,7 +90,7 @@ createNode = (parent, type, str, fn, skip) ->
             afterAll: []
         type: type
         str: str
-        fn: fn || ->
+        fn: fn # || ->
         skip: skip
         pending: not fn?
         children: []
@@ -100,13 +117,13 @@ runTests = ->
 
             debug "recursing #{pointer.str}"
 
-            {parent, children, type} = pointer
+            {parent, children, type, fn} = pointer
 
-            if parent? and type == 'it' and (not tree.only or pointer.only)
+            if parent? and type == 'it' and fn? and (not tree.only or pointer.only)
 
                 recurse2 = (parent, functions = []) ->
 
-                    functions.push fn: fn, node: pointer, type: 'beforeEach' for fn in parent.hooks.beforeEach.reverse()
+                    functions.push fn: fn, node: pointer.parent, type: 'beforeEach' for fn in parent.hooks.beforeEach.reverse()
 
                     return functions unless parent.parent?
 
@@ -130,11 +147,11 @@ runTests = ->
 
                 else recurse child, functions for child in children
 
-            if parent? and type == 'it' and (not tree.only or pointer.only)
+            if parent? and type == 'it' and fn? and (not tree.only or pointer.only)
 
                 recurse3 = (parent, functions = []) ->
 
-                    functions.push fn: fn, node: pointer, type: 'afterEach' for fn in parent.hooks.afterEach
+                    functions.push fn: fn, node: pointer.parent, type: 'afterEach' for fn in parent.hooks.afterEach
 
                     return functions unless parent.parent?
 
@@ -159,6 +176,8 @@ runTests = ->
                             timeout = undefined
 
                             done = undefined
+
+                            dev.running.test = test
 
                             return resolve() if test.node.pending
 
@@ -281,6 +300,8 @@ runTests = ->
 
                 (result) ->
 
+                    dev.running = {}
+
                     pipe.emit 'dev.test.after.all',
 
                         error: null
@@ -301,6 +322,8 @@ runTests = ->
                             tree = undefined
 
                 (error) ->
+
+                    dev.running = {}
 
                     pipe.emit 'dev.test.after.all', 
 
@@ -331,7 +354,7 @@ runTests = ->
 
 
 
-global.before = (fn) ->
+global.before ||= (fn) ->
 
     return unless begin()
 
@@ -347,7 +370,7 @@ global.before = (fn) ->
 
     return end()
 
-global.beforeAll = (fn) ->
+global.beforeAll ||= (fn) ->
 
     return unless begin()
 
@@ -355,7 +378,7 @@ global.beforeAll = (fn) ->
 
     return end()
 
-global.beforeEach = (fn) ->
+global.beforeEach ||= (fn) ->
 
     return unless begin()
 
@@ -363,7 +386,7 @@ global.beforeEach = (fn) ->
 
     return end()
 
-global.afterEach = (fn) ->
+global.afterEach ||= (fn) ->
 
     return unless begin()
 
@@ -371,7 +394,7 @@ global.afterEach = (fn) ->
 
     return end()
 
-global.afterAll = (fn) ->
+global.afterAll ||= (fn) ->
 
     return unless begin()
 
@@ -379,7 +402,7 @@ global.afterAll = (fn) ->
 
     return end()
 
-global.after = (fn) ->
+global.after ||= (fn) ->
 
     return unless begin()
 
@@ -413,6 +436,8 @@ context = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
+    dev.recursing.node = pointer
+
     pointer.argNames = util.argsOf fn
 
     pointer.arguments = {}
@@ -428,6 +453,8 @@ context = (str, fn) ->
     fn.apply null, doWithArgs
 
     pointer = prevPointer
+
+    dev.recursing.node = pointer
 
     return end()
 
@@ -449,6 +476,8 @@ xcontext = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
+    dev.recursing.node = pointer
+
     pointer.argNames = util.argsOf fn
 
     pointer.arguments = {}
@@ -465,17 +494,19 @@ xcontext = (str, fn) ->
 
     pointer = prevPointer
 
+    dev.recursing.node = pointer
+
     return end()
 
-global.context = context
+global.context ||= context
 
-global.xcontext = xcontext
+global.xcontext ||= xcontext
 
-global.describe = context
+global.describe ||= context
 
-global.xdescribe = xcontext
+global.xdescribe ||= xcontext
 
-global.it = (str, fn) ->
+global.it ||= (str, fn) ->
 
     return unless begin()
 
@@ -485,7 +516,7 @@ global.it = (str, fn) ->
 
     return end()
 
-global.it.only = (str, fn) ->
+global.it.only ||= (str, fn) ->
 
     return unless begin()
 
@@ -499,7 +530,7 @@ global.it.only = (str, fn) ->
 
     return end()
 
-global.xit = (str, fn) ->
+global.xit ||= (str, fn) ->
 
     return unless begin()
 

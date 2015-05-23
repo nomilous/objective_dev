@@ -16,6 +16,9 @@ expector = require './expector'
 
 module.exports.mocks = {}
 
+{logger} = objective
+{TODO, debug, error, info} = logger
+
 
 module.exports.before = (conf) ->
 
@@ -38,31 +41,33 @@ module.exports.register = (name, object) ->
             createdIn: type
             createdAt: node
 
-    fail = (msg) ->
+    TODO 'Sensible prevent of mock (alias) overwrite'
 
-        e = new Error msg
-        e.name = 'InjectionError'
-        throw e
+    # fail = (msg) ->
 
-    return fail("Cannot overwrite existing alias '#{name}'") unless test? && type? && node?
+    #     e = new Error msg
+    #     e.name = 'InjectionError'
+    #     throw e
 
-    createdIn = module.exports.mocks[name].createdIn
-    createdAt = module.exports.mocks[name].createdAt
+    # return fail("Cannot overwrite existing alias '#{name}'") unless test? && type? && node?
 
-    if createdAt.id == node.id
+    # createdIn = module.exports.mocks[name].createdIn
+    # createdAt = module.exports.mocks[name].createdAt
 
-        return fail "Cannot overwrite alias '#{name}' created in Sibling test node."
+    # if createdAt.id == node.id
+
+    #     return fail "Cannot overwrite alias '#{name}' created in Sibling test node."
 
 
-    recurse = (parent) ->
+    # recurse = (parent) ->
 
-        if createdAt.id == parent.id
+    #     if createdAt.id == parent.id
 
-            return fail "Cannot overwrite alias '#{name}' created in Ancestor test node."
+    #         return fail "Cannot overwrite alias '#{name}' created in Ancestor test node."
 
-        recurse parent.parent if parent.parent?
+    #     recurse parent.parent if parent.parent?
 
-    recurse node.parent if node.parent?
+    # recurse node.parent if node.parent?
 
     module.exports.mocks[name] =
 
@@ -73,7 +78,15 @@ module.exports.register = (name, object) ->
 
 module.exports.load = (name) ->
 
-    if module.exports.mocks[name]? then return module.exports.mocks[name].object
+    named = (object) ->
+
+        return unless object?
+
+        Object.defineProperty object, '$$name', value: name, enumerable: false
+
+        return object
+
+    if module.exports.mocks[name]? then return named module.exports.mocks[name].object
 
     if name == 'Subject' or name == 'subject'
 
@@ -81,12 +94,14 @@ module.exports.load = (name) ->
         modpath = modpath.replace '_spec.', '.'
 
         try
-            return expector.create require process.cwd() + path.sep + modpath
+            return named expector.create require process.cwd() + path.sep + modpath
 
         catch e
 
             console.log "Subject injection failed. #{e.toString()}"
-            return {}
+            return named {}
+
+    TODO 'also search for camel exact match'
 
     if name.match /^[A-Z]/
 
@@ -137,7 +152,7 @@ module.exports.load = (name) ->
 
         if matches.length == 1
 
-            return expector.create require matches[0]
+            return named expector.create require matches[0]
 
         if matches.length == 0
 
@@ -151,7 +166,7 @@ module.exports.load = (name) ->
             e.matches = matches
             throw e
 
-    return expector.create require name
+    return named expector.create require name
 
 
 

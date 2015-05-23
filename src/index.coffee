@@ -14,6 +14,8 @@ module.exports = dev = shared.dev =
 
     sourceDir: 'lib'
 
+    expectorName: 'does'
+
     walkDepth: 3
 
     walkWidth: 3

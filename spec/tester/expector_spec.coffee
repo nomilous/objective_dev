@@ -18,6 +18,16 @@ describe 'expector', ->
 
     context 'creating does entity', ->
 
+        it.only '', ->
+
+            class Moo
+
+            i = new Moo
+
+            #console.log i.constructor.name
+
+            console.log Moo.constructor.name
+
 
         it 'can use alternate expector name',
 
@@ -447,7 +457,11 @@ describe 'expector', ->
 
             # i.e. if there is a beforeAll expectation, it must be the first in the stack
         it 'does not allow mock anonymously (not in test or hook'
-            
+
+
+        it 'does not allow mock overwrite in subling hook'
+
+        it 'does allow mock overwrite in sibling test'
 
     context 'report', ->
 

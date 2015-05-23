@@ -44,7 +44,19 @@ module.exports.create = (object) ->
 
     object[expectorName] = (onClass, args...) ->
 
+        # console.log arguments
+
         ### .does (for expectations on instance methods) ###
+
+        try testType = dev.running.test.type
+
+        if ['beforeAll','afterAll','afterEach'].indexOf(testType) != -1
+
+            throw (
+                e = new Error 'Cannot create expectation in ' + testType
+                e.name = 'ExpectationError'
+                e
+            )
 
         pendingContexts.length = 0 # reset
 
@@ -77,9 +89,10 @@ module.exports.create = (object) ->
                     o = entities[object.$$id] ||= 
 
                         type: objectType
-                        name: object.name || n
+                        name: n
                         object: object
                         expectations: {}
+                        calls: {}
                         originals: {}
 
                     type = 'mock'
@@ -92,11 +105,17 @@ module.exports.create = (object) ->
 
                         name = name[2..]
 
-                    o.expectations[name] ||= []
+                    o.expectations[name] ||= {}
 
-                    o.expectations[name].push type: type, fn: fn, context: null
+                    o.expectations[name][onClass] ||= []
 
-                    pendingContexts.push o.expectations[name][-1..][0] # for .with()
+                    o.expectations[name][onClass].push type: type, fn: fn, context: null
+
+                    pendingContexts.push o.expectations[name][onClass][-1..][0] # for .as()
+
+                    o.calls[name] ||= {}
+
+                    o.calls[name][onClass] ||= []
 
                     o.originals[name] ||= {}
 
@@ -129,23 +148,38 @@ module.exports.create = (object) ->
 
                         ### EXPECTATION_STUB ###
 
-                        TODO 'dont throw Too many calls, report number as exception after instead'
+                        expected = false
 
                         try
 
-                            {type, fn, context} = entities[object.$$id].expectations[name].shift()
+                            {type, fn, context} = entities[object.$$id].expectations[name][onClass].shift()
 
-                        catch
+                            expected = true
 
-                            e = new Error "Too many calls to function '#{name}()'"
-                            e.name = 'ExpectationError'
-                            throw e
+                        fn ||= ->
+
+                        entities[object.$$id].calls[name][onClass].push call =
+
+                            type: type
+                            fn: fn
+                            context: context
+                            arguments: arguments
+                            expected: expected
+                            error: null
+                            result: null
+
 
                         if type == 'spy'
 
                             original = entities[object.$$id].originals[name][onClass].fn || ->
 
-                        result = fn.apply context || object, arguments
+                        try
+
+                            call.result = result = fn.apply context || object, arguments
+
+                        catch e
+
+                            call.error = e
 
                         result = original.apply context || object, arguments if original?
 
@@ -157,6 +191,8 @@ module.exports.create = (object) ->
                     return object[name] = stub if onClass == true
 
                     object.prototype[name] = stub
+
+        # console.log entities
 
         as: (context) ->
 
@@ -185,6 +221,8 @@ module.exports.mock = (args...) ->
 
         injector.register name, result
 
+        Object.defineProperty result, '$$name', value: name, enumerable: false
+
     return result
 
 
@@ -210,25 +248,76 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
     for id of entities
 
-        {object, expectations} = entities[id]
+        {object, expectations, calls} = entities[id]
 
-        report[object.toString()] ||= {}
+        try
+
+            constructorName = object.constructor.name
+            objectName = "#{object.$$name} [#{constructorName}]"
+
+        catch
+
+            objectName = object.$$name
+
+
+        report[objectName] ||= functions: {}
+
+        errorString = "Function expectations were not met"
 
         for name of expectations
 
-            funcName = name + '()'
+            for onClass of expectations[name]
 
-            report[object.toString()][funcName] = 'OK'
+                functionName = name + '()'
 
-            if expectations[name].length > 0
+                remaining = expectations[name][onClass].length
 
-                report[object.toString()][funcName] = "PROBLEM - #{expectations[name].length} expectations remain"
+                runExpected = 0
 
-                failed = true
+                runUnexpected = 0
+
+                for {expected, error} in calls[name][onClass]
+
+                    errored = error if error?
+
+                    runExpected++ if expected
+
+                    runUnexpected++ unless expected
+
+                if errored?
+
+                    result = 
+
+                        ERROR: errored.toString()
+
+                        error: errored
+
+                    errorString = "Exception in expectation"
+
+                    failed = true
+
+                else if remaining > 0
+
+                    result = ERROR: "Ran #{runExpected} times of expected #{runExpected + remaining}"
+
+                    failed = true
+
+                else if runUnexpected == 0
+
+                    result = OK: "Ran #{runExpected} times as expected"
+
+                else if runUnexpected != 0
+
+                    result = ERROR: "Ran #{runExpected + runUnexpected} times of expected #{runExpected}"
+
+                    failed = true
+
+                report[objectName].functions[functionName] = result
+
 
     if failed
 
-        e = new Error "Function expectations were not met"
+        e = new Error errorString
 
         e.name = 'ExpectationError'
 
@@ -243,30 +332,36 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
     return unless test.type == 'test'
 
-    debug 'clear expectations unless created in beforeAll?'
+    debug 'clear expectations'
 
-    TODO 'EXPECTOR CLEARUP'
+    TODO 'remove entities from injector if not still in play'
+    TODO 'remove expectations if no longer in play (deleted does and fn hangs about)'
 
-    delete entities[id] for id of entities
+    for id of entities
 
+        {object, originals, calls, expectations} = entities[id]
 
-    # for id of entities
+        for name of originals
 
-    #     {object, originals} = entities[id]
+            for onClass of originals[name]
 
-    #     for name of originals
+                fn = originals[name][onClass].fn
 
-    #         fn = originals[name].fn
+                if fn.toString().match /NO_ORIGINAL/
 
-    #         if fn.toString().match /NO_ORIGINAL/
+                    delete object[name]
 
-    #             delete object[name]
+                    continue
 
-    #             continue 
+                ####### class? instance? prototype? restore!.
 
-    #         object[name] = fn
+                object[name] = fn
 
-    # delete entities[id] for id of entities
+            delete calls[name]
+
+            delete expectations[name]
+
+            delete originals[name]
 
 
 

@@ -34,6 +34,8 @@ TODO 'do chai asserts work?'
 
 TODO 'done called multiple times'
 
+TODO 'empty function still pending'
+
 injector = require './injector'
 
 running = undefined
@@ -80,6 +82,12 @@ createNode = (parent, type, str, fn, skip) ->
 
         namePath = recurse(parent, [str]).reverse()
 
+    pending = not fn?
+
+    if fn.toString() == 'function () {}'
+
+        pending = true
+
     node =
 
         id: generate()
@@ -92,7 +100,7 @@ createNode = (parent, type, str, fn, skip) ->
         str: str
         fn: fn # || ->
         skip: skip
-        pending: not fn?
+        pending: pending
         children: []
         parent: parent
         path: namePath
@@ -195,6 +203,8 @@ runTests = ->
 
                                 test.error = e
 
+                                test.endedAt = Date.now()
+
                                 pipe.emit 'dev.test.after.each', test: test, (err) ->
 
                                     if err? then return reject err
@@ -226,6 +236,8 @@ runTests = ->
                                     doWithArgs.push done = ->
 
                                         clearTimeout timeout
+
+                                        test.endedAt = Date.now()
 
                                         pipe.emit 'dev.test.after.each', test: test, (err) ->
 
@@ -265,9 +277,13 @@ runTests = ->
 
                                 debug "running '#{test.type}' at '#{test.node.str}'"
 
+                                test.startedAt = Date.now()
+
                                 test.fn.apply context, doWithArgs
 
                                 return if done?
+
+                                test.endedAt = Date.now()
 
                                 pipe.emit 'dev.test.after.each', test: test, (err) ->
 

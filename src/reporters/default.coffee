@@ -24,22 +24,26 @@ module.exports = ->
 
 
 
-    pipe.on 'dev.test.before.all', (payload, next) ->
+    pipe.on 'dev.test.before.all', (payload) ->
 
         console.log()
-        next()
 
 
 
 
-    pipe.on 'dev.test.after.all', ({tree, functions}, next) ->
+    pipe.on 'dev.test.after.all', ({tree, functions}) ->
 
         for fn in functions
 
-            return next() if fn.type != 'test' and fn.error?
+            return if fn.type != 'test' and fn.error?
 
             # no report if hook failed
 
+        totalDuration = 0
+
+        for {duration} in functions
+
+            totalDuration += duration if duration?
 
         failed = 0
         passed = 0
@@ -52,34 +56,58 @@ module.exports = ->
 
                 pending++ if node.pending
 
-                skipped++ if node.skip or skipping
+                skipped++ if node.skip or skipping or tree.only
+
+                skipped-- if tree.only and node.only
 
                 unless node.pending or node.skip or skipping
 
-                    if node.error then failed++ else passed++
+                    if tree.only 
+
+                        if node.only
+
+                            if node.error then failed++ else passed++
+
+                    else
+
+                        if node.error then failed++ else passed++
 
             if node.type == 'context'
 
                 skipping = true if node.skip
 
             recurse child, skipping for child in node.children if node.children?
-
+        
         recurse tree
 
-        console.log "\nfail: #{failed} pass: #{passed} skip: #{skipped} pend: #{pending}"
+        failedMsg = 'fail: 0  '
+        passedMsg = 'pass: 0  '
+        skipMsg = 'skip: 0  '
+        pendMsg = 'pend: 0'
 
-        next()
+        if failed > 0 then failedMsg = "fail: #{failed}  ".red.bold
+
+        if passed > 0 then passedMsg = "pass: #{passed}  ".green.bold
+
+        if skipped > 0 then skipMsg = "skip: #{skipped}  ".cyan.bold
+
+        if pending > 0 then pendMsg = "pend: #{pending}".yellow.bold
+
+        console.log "\n   #{failedMsg} #{passedMsg} #{skipMsg} #{pendMsg}   time: #{totalDuration}ms"
 
 
 
 
-    pipe.on 'dev.test.after.each', ({test}, next) ->
+
+    pipe.on 'dev.test.after.each', ({test}) ->
 
         try 
 
             testPath = test.node.path[1..]
             testPath[ testPath.length - 1 ] = testPath[ testPath.length - 1 ].bold
             testName = testPath.join ' + '
+
+        test.duration = test.endedAt - test.startedAt
 
         unless test.type == 'test'
 
@@ -94,11 +122,11 @@ module.exports = ->
 
                 TODO 'linkable stack on console.click to sublime plugin got location'
 
-                console.log "ERROR".red, "in #{test.type}".bold
+                console.log ("ERROR".red + "in #{test.type}".bold).underline
                 
                 walkStack test.error
 
-            return next()
+            return
 
         unless test.error?
 
@@ -108,31 +136,33 @@ module.exports = ->
 
             firstfail = true
 
-            return next()
+            return
 
         console.log() if firstfail
 
         firstfail = false
 
-        console.log 'FAILED '.red + testName
+        console.log ('FAILED '.red + testName).underline
 
         if test.error.name == 'AssertionError'
 
             showAssertionError test.error
 
-            return next()
+            return
 
         else if test.error.name == 'ExpectationError'
 
             console.log test.error.stack.split(EOL)[0].bold.red
 
-            try console.log JSON.stringify test.error.detail, null, 2
+            try
 
-            return next()
+                string = JSON.stringify test.error.detail, null, 3
+                console.log string
+
+            return
 
         walkStack test.error
 
-        return next()
 
 
 showAssertionError = (error) ->

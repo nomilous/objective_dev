@@ -17,68 +17,46 @@ fs = require 'fs'
 
 firstfail = false
 
-module.exports = ->
+initialised = false
+
+enabled = undefined
+
+accum = 
+
+    pass: 0
+    fail: 0
+    skip: 0
+    pend: 0
+    test: 0
+    hook: 0
+
+module.exports.disable = ->
+
+    enabled = false
+
+module.exports.enable = ->
+
+    enabled = true
+
+    return if initialised
+
+    initialised = true
 
     debug 'using default test reporter'
 
+    pipe.on 'multiple.done', (data) ->
 
+        failed = accum.fail
 
+        passed = accum.pass
 
-    pipe.on 'dev.test.before.all', (payload) ->
+        skipped = accum.skip
 
-        console.log()
+        pending = accum.pend
 
+        totalTestDuration = accum.test
 
-
-
-    pipe.on 'dev.test.after.all', ({tree, functions}) ->
-
-        for fn in functions
-
-            return if fn.type != 'test' and fn.error?
-
-            # no report if hook failed
-
-        totalDuration = 0
-
-        for {duration} in functions
-
-            totalDuration += duration if duration?
-
-        failed = 0
-        passed = 0
-        skipped = 0
-        pending = 0
-
-        recurse = (node, skipping = false) ->
-
-            if node.type == 'it'
-
-                pending++ if node.pending
-
-                skipped++ if node.skip or skipping or tree.only
-
-                skipped-- if tree.only and node.only
-
-                unless node.pending or node.skip or skipping
-
-                    if tree.only 
-
-                        if node.only
-
-                            if node.error then failed++ else passed++
-
-                    else
-
-                        if node.error then failed++ else passed++
-
-            if node.type == 'context'
-
-                skipping = true if node.skip
-
-            recurse child, skipping for child in node.children if node.children?
-        
-        recurse tree
+        totalHookDuration = accum.hook
 
         failedMsg = 'fail: 0  '
         passedMsg = 'pass: 0  '
@@ -93,7 +71,48 @@ module.exports = ->
 
         if pending > 0 then pendMsg = "pend: #{pending}".yellow.bold
 
-        console.log "\n   #{failedMsg} #{passedMsg} #{skipMsg} #{pendMsg}   time: #{totalDuration}ms"
+        console.log "\n  #{failedMsg} #{passedMsg} #{skipMsg} #{pendMsg}   test: #{totalTestDuration}ms   hook: #{totalHookDuration}ms"
+
+        data.exitCode = failed
+
+
+    pipe.on 'dev.test.before.all', (payload) ->
+
+
+
+    pipe.on 'dev.test.after.all', ({stats}) ->
+
+        return unless enabled
+
+        failedMsg = 'fail: 0  '
+        passedMsg = 'pass: 0  '
+        skipMsg = 'skip: 0  '
+        pendMsg = 'pend: 0'
+
+        {failed, passed, skipped, pending, totalTestDuration, totalHookDuration} = stats
+
+        if objective.noRoot
+
+            # running multiple tests from command line
+
+            accum.fail += failed
+            accum.pass += passed
+            accum.skip += skipped
+            accum.pend += pending
+            accum.test += totalTestDuration
+            accum.hook += totalHookDuration
+
+            return
+
+        if failed > 0 then failedMsg = "fail: #{failed}  ".red.bold
+
+        if passed > 0 then passedMsg = "pass: #{passed}  ".green.bold
+
+        if skipped > 0 then skipMsg = "skip: #{skipped}  ".cyan.bold
+
+        if pending > 0 then pendMsg = "pend: #{pending}".yellow.bold
+
+        console.log "\n  #{failedMsg} #{passedMsg} #{skipMsg} #{pendMsg}   test: #{totalTestDuration}ms   hook: #{totalHookDuration}ms"
 
 
 
@@ -101,9 +120,11 @@ module.exports = ->
 
     pipe.on 'dev.test.after.each', ({test}) ->
 
+        return unless enabled
+
         try 
 
-            testPath = test.node.path[1..]
+            testPath = test.node.path[0..]
             testPath[ testPath.length - 1 ] = testPath[ testPath.length - 1 ].bold
             testName = testPath.join ' + '
 
@@ -122,7 +143,14 @@ module.exports = ->
 
                 TODO 'linkable stack on console.click to sublime plugin got location'
 
-                console.log ("ERROR".red + "in #{test.type}".bold).underline
+                unless objective.plugins.dev.showError
+
+                    process.stdout.write 'X'.red
+
+                    return
+
+                console.log ("ERROR".red.bold + " in #{test.type} - #{testName}")
+                console.log "  (#{test.filename})"
                 
                 walkStack test.error
 
@@ -138,11 +166,20 @@ module.exports = ->
 
             return
 
+        if test.error?
+
+            unless objective.plugins.dev.showError
+
+                process.stdout.write '*'.red
+
+                return
+
         console.log() if firstfail
 
         firstfail = false
 
-        console.log ('FAILED '.red + testName).underline
+        console.log 'FAILED '.red.bold + testName
+        console.log "  (#{test.filename})"
 
         if test.error.name == 'AssertionError'
 
@@ -152,12 +189,15 @@ module.exports = ->
 
         else if test.error.name == 'ExpectationError'
 
-            console.log test.error.stack.split(EOL)[0].bold.red
+            console.log "  " + test.error.stack.split(EOL)[0].bold.red
 
             try
 
                 string = JSON.stringify test.error.detail, null, 3
-                console.log string
+                for line in string.split EOL
+                    line = line.replace 'ERROR', 'ERROR'.bold.red
+                    line = line.replace 'OK', 'OK'.bold.green
+                    console.log "  " + line
 
             return
 
@@ -168,24 +208,25 @@ module.exports = ->
 showAssertionError = (error) ->
 
     TODO 'Assertion diff'
-    console.log error.toString()
+    console.log "  " + error.toString()
 
 walkStack = (error) ->
 
-    stack = error.stack.split EOL
-    console.log stack[0].bold.red
-    count = 0
-    for line in stack[1..]
-        if count < dev.walkDepth
-            console.log line.bold
-        else if count == dev.walkDepth
-            console.log "\n#{line}"
-        else console.log line
-        try
-            if line.match /\)$/ then [m, file, lineNo, colNo] = line.match /\((.*):(\d+)\:(\d+)\)/
-            else [m, file, lineNo, colNo] = line.match /at\ (.*):(\d+)\:(\d+)$/
-            showCode file, lineNo, colNo unless count >= dev.walkDepth
-        count++
+    try
+        stack = error.stack.split EOL
+        console.log "  " + stack[0].bold.red
+        count = 0
+        for line in stack[1..]
+            if count < objective.plugins.dev.walkDepth
+                console.log line.bold
+            else if count == objective.plugins.dev.walkDepth
+                console.log "\n#{line}"
+            else console.log line
+            try
+                if line.match /\)$/ then [m, file, lineNo, colNo] = line.match /\((.*):(\d+)\:(\d+)\)/
+                else [m, file, lineNo, colNo] = line.match /at\ (.*):(\d+)\:(\d+)$/
+                showCode file, lineNo, colNo unless count >= dev.walkDepth
+            count++
 
 
 showCode = (file, line, col) ->
@@ -196,8 +237,8 @@ showCode = (file, line, col) ->
 
     for i in [0..lines.length - 1]
 
-        continue unless i + dev.walkWidth > line
-        continue unless i - dev.walkWidth < line 
+        continue unless i + objective.plugins.dev.walkWidth > line
+        continue unless i - objective.plugins.dev.walkWidth < line 
 
         console.log lines[i].grey unless line == i + 1
         console.log lines[i].red if line == i + 1

@@ -1,20 +1,34 @@
-{normalize} = require 'path'
+{normalize, sep} = require 'path'
+
+{TODO, debug, error} = objective.logger
 
 fs = require 'fs'
+
+{promise} = require 'when'
+
+sequence = require 'when/sequence'
 
 shared = require './shared'
 
 tester = require './tester'
 
+reporters = require './reporters'
+
+process.on 'uncaughtException', (e) ->
+
+    console.log "Exception captured out of test: #{e.toString()}"
+
 module.exports = dev = shared.dev =
 
-    before: tester.before
+    $$name: 'dev'
+
+    $$beforeEach: tester.$$beforeEach
 
     testDir: 'test'
 
     sourceDir: 'lib'
 
-    expectorName: 'does'
+    # expectorName: 'does'
 
     walkDepth: 3
 
@@ -22,11 +36,124 @@ module.exports = dev = shared.dev =
 
     compileTo: undefined
 
+    reporter: 'default'
+
+    showErrors: false
+
     reporters: require './reporters'
+
+    matchTest: [ /_spec\.coffee$/, /_spec\.js$/ ]
+
+    matchSource: [ /\.coffee$/, /\.js$/ ]
 
     init: (callback) ->
 
+        try
+
+            reporters[dev.reporter].enable()
+
+        catch
+
+            TODO 'reporter require relative to where?'
+
+            require dev.reporter
+
+
         {pipe} = objective
+
+
+        files = {}
+
+
+        pipe.on 'files.recurse.found', (data) ->
+
+            if data.path.match new RegExp "^#{dev.testDir}"
+
+                for match in dev.matchTest
+
+                    if data.path.match match
+
+                        files[data.path] = type: 'test'
+
+                        debug "objective-dev matched test '#{data.path}'"
+
+                        data.watch = true
+
+            else if data.path.match new RegExp "^#{dev.sourceDir}"
+
+                for match in dev.matchSource
+
+                    if data.path.match match
+
+                        files[data.path] = type: 'src'
+
+                        debug "objective-dev matched source '#{data.path}'"
+
+                        data.watch = true
+
+        waiting = []
+
+        pipe.on 'files.recurse.end', ({path}, next) ->
+
+            return next() unless path.match new RegExp "^#{dev.testDir}"
+
+            objective.noRoot = true
+
+            sequence( for file of files
+
+                {type} = files[file]
+
+                continue unless type == 'test'
+
+                do (file) -> -> promise (resolve, reject) ->
+
+                    # return resolve() unless file == 'spec/something_hashey_spec.coffee'
+
+                    try
+
+                        require process.cwd() + sep + file
+
+                        if objective.currentChild.filename == file
+
+                            waiting.push resolve
+
+                    catch e
+
+                        error e.stack
+
+                        resolve()
+
+            ).then -> pipe.emit 'multiple.done', {}, ->
+
+                objective.noRoot = false
+
+                next()
+            
+
+        pipe.on 'dev.test.after.all', ->
+
+            try waiting.pop()()
+
+
+        pipe.on 'files.recurse.changed', ({path}, next) ->
+
+            if path.match new RegExp "^#{dev.testDir}"
+
+                if objective.currentChild.filename?
+
+                    debug "skipping '#{path}' while running '#{objective.currentChild.filename}'"
+
+                    return next()
+
+                delete require.cache[process.cwd() + sep + path]
+
+                require process.cwd() + sep + path
+
+                return next()
+
+            next()
+
+
 
         pipe.on 'prompt.commands.register.ask', (command) ->
 
@@ -146,36 +273,6 @@ module.exports = dev = shared.dev =
                 run: (args, callback) ->
 
                     callback()
-
-
-        # pipe.on 'files.recurse.start', ({path}, next) ->
-
-        #     # console.log start: path
-
-        #     next()
-
-        # pipe.on 'files.recurse.entering', ({path}, next) ->
-
-        #     # console.log entering: path
-
-        #     next()
-
-        # pipe.on 'files.recurse.found', ({path}, next) ->
-
-        #     next()
-
-
-        # pipe.on 'files.recurse.end', (data, next) ->
-
-        #     # console.log end: data
-
-        #     next()
-
-        # pipe.on 'files.recurse.error', (error, next) ->
-
-        #     # console.log error: error
-
-        #     next()
 
 
         callback()

@@ -24,7 +24,11 @@ catch
 
 {generate} = require 'shortid'
 
-{When, sequence, deferred, util} = require 'also'
+{util} = require 'also'
+
+{defer, promise} = require 'when'
+
+sequence = require 'when/sequence'
 
 {logger} = objective
 
@@ -44,27 +48,29 @@ tree = undefined
 
 pointer = undefined
 
-module.exports.before = (config) ->
+module.exports.$$beforeEach = (config) ->
         
     delete tree[key] for key of tree
 
     debug 'loading tests...'
 
-    running = When.defer()
+    running = defer()
 
     running.promise.start = runTests
 
-    tree = createNode null, 'root', 'root', ->
+    title = objective.currentChild.title
+
+    tree = createNode null, 'root', title, ->
 
     pointer = tree
 
-    dev.tree = tree
+    objective.plugins.dev.tree = tree
 
-    dev.running = {}
+    objective.plugins.dev.running = {}
 
-    dev.recursing = {}
+    objective.plugins.dev.recursing = {}
 
-    dev.recursing.node = pointer
+    objective.plugins.dev.recursing.node = pointer
 
     tree.only = false
 
@@ -84,7 +90,7 @@ createNode = (parent, type, str, fn, skip) ->
 
     pending = not fn?
 
-    if fn.toString() == 'function () {}'
+    try if fn.toString() == 'function () {}'
 
         pending = true
 
@@ -171,13 +177,36 @@ runTests = ->
 
             return unless type == 'root'
 
+            
+
+            if functions.length == 0
+
+                return pipe.emit 'dev.test.after.all',
+
+                    error: null
+                    tree: tree
+                    functions: functions
+
+                    (err) ->
+
+                        if err?
+
+                            running.reject err
+                            running = undefined
+                            tree = undefined
+                            return
+
+                        running.resolve result
+                        running = undefined
+                        tree = undefined
+
             context = {}
 
             sequence(
 
                 for test in functions
 
-                    do (test) -> deferred ({resolve, reject, notify}) ->
+                    do (test) -> -> promise (resolve, reject, notify) ->
 
                         try
 
@@ -185,11 +214,15 @@ runTests = ->
 
                             done = undefined
 
-                            dev.running.test = test
+                            objective.plugins.dev.running.test = test
 
-                            return resolve() if test.node.pending
+                            test.filename = objective.currentChild.filename
+
+                            return resolve() if test.node.pending and test.type == 'test'
 
                             return resolve() if test.node.skip
+
+                            debug "running test: #{test.fn.toString()}"
 
                             test.argNames = util.argsOf test.fn
 
@@ -197,7 +230,7 @@ runTests = ->
 
                             tooSlow = ->
 
-                                e = new Error 'Timeout'
+                                e = new Error "Timeout in #{test.type}"
 
                                 e.name = 'Timeout'
 
@@ -227,6 +260,8 @@ runTests = ->
 
                             doWithArgs = []
 
+                            doneCalls = 0
+
                             for arg in test.argNames
 
                                 if arg == 'done'
@@ -238,6 +273,18 @@ runTests = ->
                                         clearTimeout timeout
 
                                         test.endedAt = Date.now()
+
+                                        doneCalls++
+
+                                        if doneCalls > 1
+
+                                            e = new Error "Done called multiple times"
+
+                                            e.name = 'ExpectationError'
+
+                                            test.error = e
+
+                                            test.node.error = e
 
                                         pipe.emit 'dev.test.after.each', test: test, (err) ->
 
@@ -260,6 +307,8 @@ runTests = ->
                             test.error = null
 
                         catch e
+
+                            # error e.stack
 
                             return reject e
 
@@ -295,9 +344,15 @@ runTests = ->
 
                                 clearTimeout timeout if timeout?
 
-                                test.error = e
+                                test.endedAt = Date.now()
 
-                                test.node.error = e if test.type == 'test'
+                                unless e.name == 'TestDone'
+
+                                    test.error = e
+
+                                    test.node.error = e if test.type == 'test'
+
+                                test.done = e
 
                                 pipe.emit 'dev.test.after.each', test: test, (err) ->
 
@@ -316,7 +371,7 @@ runTests = ->
 
                 (result) ->
 
-                    dev.running = {}
+                    objective.plugins.dev.running = {}
 
                     pipe.emit 'dev.test.after.all',
 
@@ -324,11 +379,11 @@ runTests = ->
                         tree: tree
                         functions: functions
 
-                        (err) ->
+                        (e) ->
 
-                            if err?
+                            if e?
 
-                                running.reject err
+                                running.reject e
                                 running = undefined
                                 tree = undefined
                                 return
@@ -337,26 +392,30 @@ runTests = ->
                             running = undefined
                             tree = undefined
 
-                (error) ->
+                (err) ->
 
-                    dev.running = {}
+                    objective.plugins.dev.running = {}
 
-                    pipe.emit 'dev.test.after.all', 
+                    pipe.emit 'dev.test.after.all',
 
-                        error: error
+                        error: err
                         tree: tree
                         functions: functions
 
-                        (err) ->
+                        (e) ->
 
-                            if err?
+                            if objective.noRoot
 
-                                running.reject err
+                                return running.resolve e
+
+                            if e?
+
+                                running.reject e
                                 running = undefined
                                 tree = undefined
                                 return
 
-                            running.reject error
+                            running.reject err
                             running = undefined
                             tree = undefined
 
@@ -452,7 +511,7 @@ context = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
-    dev.recursing.node = pointer
+    objective.plugins.dev.recursing.node = pointer
 
     pointer.argNames = util.argsOf fn
 
@@ -470,7 +529,7 @@ context = (str, fn) ->
 
     pointer = prevPointer
 
-    dev.recursing.node = pointer
+    objective.plugins.dev.recursing.node = pointer
 
     return end()
 
@@ -492,7 +551,7 @@ xcontext = (str, fn) ->
 
     pointer = pointer.children[-1..][0]
 
-    dev.recursing.node = pointer
+    objective.plugins.dev.recursing.node = pointer
 
     pointer.argNames = util.argsOf fn
 
@@ -510,7 +569,7 @@ xcontext = (str, fn) ->
 
     pointer = prevPointer
 
-    dev.recursing.node = pointer
+    objective.plugins.dev.recursing.node = pointer
 
     return end()
 

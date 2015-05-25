@@ -10,45 +10,69 @@ TODO 'how to create multiple expectations with does over and over'
 
 TODO 'reporter function/class name'
 
+TODO 'spy as not an expectation'
+
+TODO 'detect ipso, perhaps substitute'
+
 module.exports.entities = entities = {}
 
 config = undefined
 
-module.exports.before = (conf) ->
+module.exports.$$beforeEach = (conf) ->
 
     config = conf
 
+
+# access to original function inside mock
+
+original = undefined
+
+Object.defineProperty global, 'original', configurable: false, get: -> original
+
+
 module.exports.create = (object) ->
 
-    expectorName = 'does'
+    # expectorName = 'does'
 
-    try expectorName = dev.expectorName
+    # try expectorName = objective.plugins.dev.expectorName
 
     try Object.defineProperty object, '$$id', value: shortid.generate(), writable: false
 
-    upperExpectorName = expectorName[0].toUpperCase() + expectorName[1..]
+    # upperExpectorName = expectorName[0].toUpperCase() + expectorName[1..]
 
-    if upperExpectorName == expectorName
+    # if upperExpectorName == expectorName
 
-        upperExpectorName = '$' + upperExpectorName
+    #     upperExpectorName = '$' + upperExpectorName
 
-    object[upperExpectorName] = (args...) ->
+    # object[upperExpectorName] = (args...) ->
+
+    expectorNames = ['does', 'Does']
+
+    if object.does? and not object.does.toString().match /MOCKER_FUNCTION/
+
+        expectorNames = ['$does', '$Does']
+
+    object[expectorNames[0]] = (args...) ->
 
         ### .Does (for expectations on class methods) ###
 
         args.unshift true
 
-        object[expectorName].apply null, args
+        object[expectorNames[1]].apply null, args
 
     pendingContexts = []
 
-    object[expectorName] = (onClass, args...) ->
+    # object[expectorName] = (onClass, args...) ->
+
+    object[expectorNames[1]] = (onClass, args...) ->
+
+        ### MOCKER_FUNCTION ###
 
         # console.log arguments
 
         ### .does (for expectations on instance methods) ###
 
-        try testType = dev.running.test.type
+        try testType = objective.plugins.dev.running.test.type
 
         if ['beforeAll','afterAll','afterEach'].indexOf(testType) != -1
 
@@ -109,6 +133,16 @@ module.exports.create = (object) ->
 
                     o.expectations[name][onClass] ||= []
 
+                    # cannot place expectation after spy
+
+                    if o.expectations[name][onClass].length > 0
+
+                        expectation = o.expectations[name][onClass][-1..][0]
+
+                        if expectation.type != type
+
+                            throw new Error "Cannot '#{type}' on own '#{expectation.type}' in function '#{o.name}.#{name}()'"
+
                     o.expectations[name][onClass].push type: type, fn: fn, context: null
 
                     pendingContexts.push o.expectations[name][onClass][-1..][0] # for .as()
@@ -154,6 +188,12 @@ module.exports.create = (object) ->
 
                             {type, fn, context} = entities[object.$$id].expectations[name][onClass].shift()
 
+                            if type == 'spy'
+
+                                entities[object.$$id].expectations[name][onClass].unshift type: type, fn: fn, context: null
+
+                            original = entities[object.$$id].originals[name][onClass].fn
+
                             expected = true
 
                         fn ||= ->
@@ -182,6 +222,8 @@ module.exports.create = (object) ->
                             call.error = e
 
                         result = original.apply context || object, arguments if original?
+
+                        original = undefined
 
                         return result
 
@@ -259,7 +301,6 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
             objectName = object.$$name
 
-
         report[objectName] ||= functions: {}
 
         errorString = "Function expectations were not met"
@@ -271,6 +312,10 @@ pipe.on 'dev.test.after.each', ({test}) ->
                 functionName = name + '()'
 
                 remaining = expectations[name][onClass].length
+
+                if remaining > 0
+
+                    {type} = expectations[name][onClass][0]
 
                 runExpected = 0
 
@@ -298,19 +343,37 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
                 else if remaining > 0
 
-                    result = ERROR: "Ran #{runExpected} times of expected #{runExpected + remaining}"
+                    if type == 'spy'
 
-                    failed = true
+                        result = OK: "Ran spy #{runExpected} times"
+
+                    else
+
+                        result = ERROR: "Ran #{runExpected} times of expected #{runExpected + remaining}"
+
+                        failed = true
 
                 else if runUnexpected == 0
 
-                    result = OK: "Ran #{runExpected} times as expected"
+                    if type == 'spy'
+
+                        result = OK: "Ran spy #{runExpected} times"
+
+                    else
+
+                        result = OK: "Ran #{runExpected} times as expected"
 
                 else if runUnexpected != 0
 
-                    result = ERROR: "Ran #{runExpected + runUnexpected} times of expected #{runExpected}"
+                    if type == 'spy'
 
-                    failed = true
+                        result = OK: "Ran spy #{runExpected} times"
+
+                    else
+
+                        result = ERROR: "Ran #{runExpected + runUnexpected} times of expected #{runExpected}"
+
+                        failed = true
 
                 report[objectName].functions[functionName] = result
 

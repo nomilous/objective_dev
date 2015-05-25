@@ -1,1 +1,1 @@
-module.exports.before = (config) ->
+module.exports.$$beforeEach = (config) ->

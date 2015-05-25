@@ -6,9 +6,18 @@ module.exports.injector = injector = require './injector'
 
 module.exports.expector = expector = require './expector'
 
-module.exports.before = (config) ->
+module.exports.$$beforeEach = (config, callback) ->
 
-    tdd.before config
-    bdd.before config
-    injector.before config
-    expector.before config
+    try
+
+        tdd.$$beforeEach config
+        bdd.$$beforeEach config
+        injector.$$beforeEach config
+        expector.$$beforeEach config
+
+        callback()
+
+    catch e
+
+        callback e
+

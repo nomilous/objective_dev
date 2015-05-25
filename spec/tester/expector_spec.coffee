@@ -26,7 +26,7 @@ describe 'expector', ->
 
             #console.log i.constructor.name
 
-            console.log Moo.constructor.name
+            #console.log Moo.constructor.name
 
 
         it 'can use alternate expector name',

@@ -20,7 +20,7 @@ module.exports.mocks = {}
 {TODO, debug, error, info} = logger
 
 
-module.exports.before = (conf) ->
+module.exports.$$beforeEach = (conf) ->
 
     config = conf
 
@@ -29,7 +29,7 @@ module.exports.register = (name, object) ->
 
     try 
 
-        test = dev.running.test
+        test = objective.plugins.dev.running.test
         type = test.type
         node = test.node
 
@@ -90,7 +90,7 @@ module.exports.load = (name) ->
 
     if name == 'Subject' or name == 'subject'
 
-        modpath = config.filename.replace new RegExp("^#{dev.testDir}"), dev.sourceDir
+        modpath = config.filename.replace new RegExp("^#{dev.testDir}"), objective.plugins.dev.sourceDir
         modpath = modpath.replace '_spec.', '.'
 
         try
@@ -148,7 +148,7 @@ module.exports.load = (name) ->
 
                     recurse directory + path.sep + file
             
-            recurse process.cwd() + path.sep + dev.sourceDir
+            recurse process.cwd() + path.sep + objective.plugins.dev.sourceDir
 
         if matches.length == 1
 

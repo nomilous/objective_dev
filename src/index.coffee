@@ -1,6 +1,8 @@
 {normalize, sep} = require 'path'
 
-{TODO, debug, error} = objective.logger
+{TODO, error} = objective.logger
+
+debug = objective.logger.createDebug 'dev'
 
 fs = require 'fs'
 
@@ -13,6 +15,8 @@ shared = require './shared'
 tester = require './tester'
 
 reporters = require './reporters'
+
+stacks = require './stacks'
 
 process.on 'uncaughtException', (e) ->
 
@@ -46,6 +50,10 @@ module.exports = dev = shared.dev =
 
     matchSource: [ /\.coffee$/, /\.js$/ ]
 
+    nodeSource: null # path to your node clone -- git clone -b v0.10.28-release https://github.com/joyent/node.git
+                     #                                         ---------------- yours instead...
+                     # used by stacks, not required
+
     init: (callback) ->
 
         try
@@ -59,13 +67,13 @@ module.exports = dev = shared.dev =
             require dev.reporter
 
 
-        {pipe} = objective
+        {pipeline} = objective
 
 
         files = {}
 
 
-        pipe.on 'files.recurse.found', (data) ->
+        pipeline.on 'files.recurse.found', (data) ->
 
             if data.path.match new RegExp "^#{dev.testDir}"
 
@@ -93,7 +101,7 @@ module.exports = dev = shared.dev =
 
         waiting = []
 
-        pipe.on 'files.recurse.end', ({path}, next) ->
+        pipeline.on 'files.recurse.end', ({path}, next) ->
 
             return next() unless path.match new RegExp "^#{dev.testDir}"
 
@@ -107,13 +115,19 @@ module.exports = dev = shared.dev =
 
                 do (file) -> -> promise (resolve, reject) ->
 
+                    debug('processing recurse queued objective', file);
+                    try debug('already running', objective.currentChild.config.filename);
+
                     # return resolve() unless file == 'spec/something_hashey_spec.coffee'
 
                     try
 
                         require process.cwd() + sep + file
 
-                        if objective.currentChild.filename == file
+                        if objective.currentChild.config.filename == file
+
+                            # each new objective started pushes the promise into 
+                            # waiting, all exit cases handled in events below.
 
                             waiting.push resolve
 
@@ -123,25 +137,44 @@ module.exports = dev = shared.dev =
 
                         resolve()
 
-            ).then -> pipe.emit 'multiple.done', {}, ->
+            ).then ->
 
-                objective.noRoot = false
+                debug('done queued');
 
-                next()
-            
+                pipeline.emit 'multiple.objectives.done', {}, ->
 
-        pipe.on 'dev.test.after.all', ->
+                    objective.noRoot = false
+
+                    next()
+
+        pipeline.on 'objective.empty', ->
+
+            try waiting.pop()()
+        
+        pipeline.on 'objective.not.promised', ->
+
+            try waiting.pop()()
+
+        pipeline.on 'objective.init.error', ->
+
+            try waiting.pop()()
+
+        pipeline.on 'objective.run.error', ->
+
+            try waiting.pop()()
+
+        pipeline.on 'dev.test.after.all', ->
 
             try waiting.pop()()
 
 
-        pipe.on 'files.recurse.changed', ({path}, next) ->
+        pipeline.on 'files.recurse.changed', ({path}, next) ->
 
             if path.match new RegExp "^#{dev.testDir}"
 
-                if objective.currentChild.filename?
+                if objective.currentChild?
 
-                    debug "skipping '#{path}' while running '#{objective.currentChild.filename}'"
+                    debug "skipping '#{path}' while running '#{objective.currentChild.config.filename}'"
 
                     return next()
 
@@ -153,9 +186,7 @@ module.exports = dev = shared.dev =
 
             next()
 
-
-
-        pipe.on 'prompt.commands.register.ask', (command) ->
+        pipeline.on 'prompt.commands.register.ask', (command) ->
 
             command.create 'createModule',
 

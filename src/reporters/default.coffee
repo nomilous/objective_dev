@@ -1,7 +1,9 @@
 
-{logger, pipe} = objective
+{logger, pipeline} = objective
 
-{info, error, debug, TODO} = logger
+{info, error, TODO} = logger
+
+debug = logger.createDebug 'default:reporter'
 
 colors = require 'colors'
 
@@ -44,7 +46,7 @@ module.exports.enable = ->
 
     debug 'using default test reporter'
 
-    pipe.on 'multiple.done', (data) ->
+    pipeline.on 'multiple.objectives.done', (data) ->
 
         failed = accum.fail
 
@@ -76,11 +78,11 @@ module.exports.enable = ->
         data.exitCode = failed
 
 
-    pipe.on 'dev.test.before.all', (payload) ->
+    pipeline.on 'dev.test.before.all', (payload) ->
 
 
 
-    pipe.on 'dev.test.after.all', ({stats}) ->
+    pipeline.on 'dev.test.after.all', ({stats}) ->
 
         return unless enabled
 
@@ -118,7 +120,7 @@ module.exports.enable = ->
 
 
 
-    pipe.on 'dev.test.after.each', ({test}) ->
+    pipeline.on 'dev.test.after.each', ({test}) ->
 
         return unless enabled
 
@@ -145,7 +147,7 @@ module.exports.enable = ->
 
                 unless objective.plugins.dev.showError
 
-                    process.stdout.write 'X'.red
+                    console._stdout.write 'X'.red
 
                     return
 
@@ -158,7 +160,7 @@ module.exports.enable = ->
 
         unless test.error?
 
-            process.stdout.write '*'.green
+            console._stdout.write '*'.green
 
             # console.log 'PASSED '.green, testName
 
@@ -170,7 +172,7 @@ module.exports.enable = ->
 
             unless objective.plugins.dev.showError
 
-                process.stdout.write '*'.red
+                console._stdout.write '*'.red
 
                 return
 

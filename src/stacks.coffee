@@ -22,7 +22,6 @@ module.exports.enable = ->
     # dev.reporters.default.enable()
 
 
-
 module.exports.disable = ->
 
     Error.prepareStackTrace = origPrepareStackTrace
@@ -52,11 +51,9 @@ pad = require 'pad'
 
 fs = require 'fs'
 
+{dirname, normalize, sep} = require 'path'
+
 {EOL} = require 'os'
-
-# testPadLength = 1
-
-# stepPadLength = 1
 
 stack = []
 
@@ -74,13 +71,13 @@ currentTest = ->
 
     fail = fails[fails.length - 1 - testPosition]
 
+    type = if fail.type == 'test' then '' else "(#{fail.type}) "
+
     path = fail.node.path
 
     pathLength = path.length
 
-    # path[ pathLength - 1 ] = path[ pathLength - 1 ].bold
-
-    "#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED ".red.bold + path.join(' + ').bold
+    "#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED ".red.bold + "#{type.bold}" + path.join(' + ').bold
 
 previousTest = ->
 
@@ -90,9 +87,11 @@ previousTest = ->
 
     return '' unless fail?
 
+    type = if fail.type == 'test' then '' else "(#{fail.type}) "
+
     path = fail.node.path
 
-    ("#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED " + path.join ' + ').grey
+    ("#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED " + "#{type.bold}" + path.join ' + ').grey
 
 nextTest = ->
 
@@ -102,9 +101,11 @@ nextTest = ->
 
     return '' unless fail?
 
+    type = if fail.type == 'test' then '' else "(#{fail.type}) "
+
     path = fail.node.path
 
-    ("#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED " + path.join ' + ').grey
+    ("#{pad(2, (num + 1).toString(), '0')}".bold + " FAILED " + "#{type.bold}" + path.join ' + ').grey
 
 
 currentLine = -> 
@@ -124,15 +125,33 @@ currentLine = ->
         try
 
             result = EOL
+
+            d = dirname filename
+
+            if d == '.' and objective.plugins.dev.nodeSource?
+
+                if filename == 'node.js'
+
+                    filename = normalize objective.plugins.dev.nodeSource + sep + 'src' + sep + filename
+
+                else
+
+                    filename = normalize objective.plugins.dev.nodeSource + sep + 'lib' + sep + filename
         
             file = fs.readFileSync filename
 
-            lines = file.toString().split EOL
+            if filename.match /\.coffee/
+
+                lines = objective.coffee.compile(file.toString(), bare: true).split EOL
+
+                lines.unshift ''
+
+            else
+
+                lines = file.toString().split EOL
 
             for i in [0..lines.length - 1]
 
-                # continue unless i + objective.plugins.dev.walkWidth > linenumber
-                # continue unless i - objective.plugins.dev.walkWidth < linenumber 
                 continue unless i + 7 > linenumber
                 continue unless i - 7 < linenumber
 
@@ -176,8 +195,6 @@ nextLines = ->
 
 stackReport = ->
 
-    # stepPadLength = stack.length.toString().length
-
     # #{previousLine()}
 
     """
@@ -187,7 +204,7 @@ stackReport = ->
     """
 
 
-render = ->
+render = (browsing = false) ->
 
     # currentTest()
 
@@ -205,13 +222,15 @@ render = ->
 
     successCount = 0
 
-    content += '|'
+    content += '|' unless browsing
 
     beforeCount = count - testPosition - 1
 
     afterCount = testPosition
 
     fail = fails[fails.length - 1 - testPosition]
+
+    filename = fail.filename
 
     try stack = fail.error.stack
     stack ||= []
@@ -225,13 +244,11 @@ render = ->
     heading3 = "error stack (depth #{stack.length})" + "  left,right"
 
     failsText = """
-
+    #{filename}
     #{heading1}
-
     #{previousTest()}
     #{currentTest()}
     #{nextTest()}
-
     #{heading2}
     #{heading3}
 
@@ -243,9 +260,9 @@ render = ->
     screen.render()
 
 
-{pipe} = objective
+{pipeline} = objective
 
-pipe.on 'prompt.commands.register.ask', (command) ->
+pipeline.on 'prompt.commands.register.ask', (command) ->
 
     close = undefined
 
@@ -261,7 +278,13 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                 module.exports.disable()
 
-                blessed.program().clear()
+                try
+
+                    blessed.program().clear()
+
+                    # blessed.program().showCursor()
+
+                content = ''
 
                 close()
 
@@ -279,7 +302,7 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                 objective.user.goto
 
-                    type: 'dev.source.file'
+                    type: 'dev.source.file.local'
 
                     filename: filename
 
@@ -299,7 +322,7 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                     return
 
-                render()
+                render true
 
             try if key.name == 'down'
 
@@ -313,7 +336,7 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                     return
 
-                render()
+                render true
 
             try if key.name == 'left'
 
@@ -327,7 +350,7 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                     return
 
-                render()
+                render true
 
             try if key.name == 'right'
 
@@ -341,12 +364,10 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
                     return
 
-                render()
+                render true
 
 
         run: (args, callback) ->
-
-
 
             module.exports.enable()
 
@@ -361,8 +382,6 @@ pipe.on 'prompt.commands.register.ask', (command) ->
                     autoPadding: true
                     smartCSR: true
 
-            # screen.append blessed.text 'o', {}
-
             unless text?
 
                 text = blessed.text
@@ -374,14 +393,15 @@ pipe.on 'prompt.commands.register.ask', (command) ->
                 screen.append text
 
 
-            blessed.program().clear()
+            try
 
+                blessed.program().clear()
 
-            process.nextTick ->
+                # blessed.program().hideCursor()
 
-                text.setContent "Waiting for test."
+            text.setContent "Waiting for test."
 
-                screen.render()
+            screen.render()
 
 
 
@@ -397,7 +417,7 @@ pipe.on 'prompt.commands.register.ask', (command) ->
 
         """
 
-pipe.on 'dev.test.before.all', ->
+pipeline.on 'dev.test.before.all', ->
 
     return unless enabled
 
@@ -410,7 +430,7 @@ pipe.on 'dev.test.before.all', ->
         screen.render()
 
 
-pipe.on 'dev.test.after.each', ({test}) ->
+pipeline.on 'dev.test.after.each', ({test}) ->
 
     return unless enabled
 
@@ -445,7 +465,7 @@ pipe.on 'dev.test.after.each', ({test}) ->
         screen.render()
 
 
-pipe.on 'dev.test.after.all', ({functions}) ->
+pipeline.on 'dev.test.after.all', ({functions}) ->
 
     return unless enabled
 
@@ -455,9 +475,21 @@ pipe.on 'dev.test.after.all', ({functions}) ->
 
         fn
 
-    testPosition = 0
+    if fails.length == 0
 
-    stepPosition = 0
+        testPosition = 0 
+
+        stepPosition = 0
+
+        return render()
+
+    if testPosition > fails.length - 1
+
+        testPosition = 0 
+
+    if stepPosition > fails[testPosition].error.stack.length - 1
+
+        stepPosition = 0
 
     # testPadLength = fails.length.toString().length
 

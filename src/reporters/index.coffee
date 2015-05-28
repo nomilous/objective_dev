@@ -1,9 +1,8 @@
 module.exports.default = require './default'
-module.exports.stacks = require './stacks'
 
-{pipe} = objective
+{pipeline} = objective
 
-pipe.on 'dev.test.after.all', (payload) ->
+pipeline.on 'dev.test.after.all', (payload) ->
 
     {functions, tree} = payload
 

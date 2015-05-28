@@ -2,14 +2,15 @@
 
 try
     
-    {pipe} = objective
-    pipe.createEvent 'dev.test.before.all'
-    pipe.createEvent 'dev.test.after.all'
-    pipe.createEvent 'dev.test.before.each'
-    pipe.createEvent 'dev.test.after.each'
+    {pipeline} = objective
+    pipeline.createEvent 'dev.test.before.all'
+    pipeline.createEvent 'dev.test.after.all'
+    pipeline.createEvent 'dev.test.before.each'
+    pipeline.createEvent 'dev.test.after.each'
 
     {logger} = objective
-    {info, debug, error} = logger
+    {info, error} = logger
+    debug = logger.createDebug 'bdd'
 
     # dev.test = 
 
@@ -58,7 +59,7 @@ module.exports.$$beforeEach = (config) ->
 
     running.promise.start = runTests
 
-    title = objective.currentChild.title
+    title = objective.currentChild.config.title
 
     tree = createNode null, 'root', title, ->
 
@@ -84,9 +85,7 @@ createNode = (parent, type, str, fn, skip) ->
         return parts unless parent.parent?
         return recurse parent.parent, parts
 
-    if parent?
-
-        namePath = recurse(parent, [str]).reverse()
+    namePath = if parent? then recurse(parent, [str]).reverse() else [str]
 
     pending = not fn?
 
@@ -121,7 +120,7 @@ end = -> return running.promise
 
 runTests = ->
 
-    pipe.emit 'dev.test.before.all', tree: tree, (err) ->
+    pipeline.emit 'dev.test.before.all', tree: tree, (err) ->
 
         if err? then return running.reject err
 
@@ -181,7 +180,7 @@ runTests = ->
 
             if functions.length == 0
 
-                return pipe.emit 'dev.test.after.all',
+                return pipeline.emit 'dev.test.after.all',
 
                     error: null
                     tree: tree
@@ -216,7 +215,7 @@ runTests = ->
 
                             objective.plugins.dev.running.test = test
 
-                            test.filename = objective.currentChild.filename
+                            test.filename = objective.currentChild.config.filename
 
                             return resolve() if test.node.pending and test.type == 'test'
 
@@ -238,7 +237,7 @@ runTests = ->
 
                                 test.endedAt = Date.now()
 
-                                pipe.emit 'dev.test.after.each', test: test, (err) ->
+                                pipeline.emit 'dev.test.after.each', test: test, (err) ->
 
                                     if err? then return reject err
 
@@ -286,7 +285,7 @@ runTests = ->
 
                                             test.node.error = e
 
-                                        pipe.emit 'dev.test.after.each', test: test, (err) ->
+                                        pipeline.emit 'dev.test.after.each', test: test, (err) ->
 
                                             if err? then return reject err
 
@@ -310,9 +309,15 @@ runTests = ->
 
                             # error e.stack
 
-                            return reject e
+                            test.error = e
 
-                        pipe.emit 'dev.test.before.each', test: test, (err) ->
+                            test.node.error = e
+
+                            clearTimeout timeout if timeout?
+
+                            # return reject e
+
+                        pipeline.emit 'dev.test.before.each', test: test, (err) ->
 
                             # perhaps only start test timeout after before.each pipe
 
@@ -334,7 +339,7 @@ runTests = ->
 
                                 test.endedAt = Date.now()
 
-                                pipe.emit 'dev.test.after.each', test: test, (err) ->
+                                pipeline.emit 'dev.test.after.each', test: test, (err) ->
 
                                     if err? then return reject err
 
@@ -354,7 +359,7 @@ runTests = ->
 
                                 test.done = e
 
-                                pipe.emit 'dev.test.after.each', test: test, (err) ->
+                                pipeline.emit 'dev.test.after.each', test: test, (err) ->
 
                                     if err? then return reject err
 
@@ -373,7 +378,7 @@ runTests = ->
 
                     objective.plugins.dev.running = {}
 
-                    pipe.emit 'dev.test.after.all',
+                    pipeline.emit 'dev.test.after.all',
 
                         error: null
                         tree: tree
@@ -396,7 +401,7 @@ runTests = ->
 
                     objective.plugins.dev.running = {}
 
-                    pipe.emit 'dev.test.after.all',
+                    pipeline.emit 'dev.test.after.all',
 
                         error: err
                         tree: tree

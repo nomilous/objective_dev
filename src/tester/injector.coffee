@@ -17,7 +17,8 @@ expector = require './expector'
 module.exports.mocks = {}
 
 {logger} = objective
-{TODO, debug, error, info} = logger
+{TODO, error, info} = logger
+debug = logger.createDebug 'devinjector'
 
 
 module.exports.$$beforeEach = (conf) ->

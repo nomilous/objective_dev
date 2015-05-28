@@ -2,9 +2,11 @@ shortid = require 'shortid'
 
 injector = require './injector'
 
-{pipe, logger} = objective
+{pipeline, logger} = objective
 
-{debug, error, info, TODO} = logger
+{error, info, TODO} = logger
+
+debug = logger.createDebug 'expector'
 
 TODO 'how to create multiple expectations with does over and over'
 
@@ -46,25 +48,119 @@ module.exports.create = (object) ->
 
     # object[upperExpectorName] = (args...) ->
 
-    expectorNames = ['does', 'Does']
+    for name in ['does', 'Does', 'spy', 'Spy', 'stub', 'Stub']
 
-    if object.does? and not object.does.toString().match /MOCKER_FUNCTION/
+        if object[name]? and not object[name].toString().match /MOCKER_FUNCTION/
 
-        expectorNames = ['$does', '$Does']
+            console.log name, object[name].toString()
 
-    object[expectorNames[0]] = (args...) ->
+            throw new Error "Unsupported object already defines #{name}() cannot mock or inject into #{object.toString()}"
+
+    # if object.Does? and not object.Does.toString().match /MOCKER_FUNCTION/
+
+    #     error 'Cannot create .Does()'
+
+    # if object.spy? and not object.spy.toString().match /MOCKER_FUNCTION/
+
+    #     error 'Cannot create .spy()'
+
+    # if object.Spy? and not object.Spy.toString().match /MOCKER_FUNCTION/
+
+    #     error 'Cannot create .Spy()'
+
+    # if object.stub? and not object.stub.toString().match /MOCKER_FUNCTION/
+
+    #     error 'Cannot create .stub()'
+
+    # if object.Stub? and not object.Stub.toString().match /MOCKER_FUNCTION/
+
+    #     error 'Cannot create .Stub()'
+
+
+    pendingContexts = []
+
+    Object.defineProperty object, 'Spy', configurable: true, enumerable: false, get: -> (args...) ->
+
+        ### MOCKER_FUNCTION ###
+
+        for functions in args
+
+            for name of functions
+
+                fn = functions[name]
+
+                delete functions[name]
+
+                functions['$' + name] = fn
+
+        object.Does.apply null, args
+
+
+    Object.defineProperty object, 'spy', configurable: true, enumerable: false, get: -> (args...) ->
+
+        ### MOCKER_FUNCTION ###
+
+        for functions in args
+
+            for name of functions
+
+                fn = functions[name]
+
+                delete functions[name]
+
+                functions['$' + name] = fn
+
+        object.does.apply null, args
+
+
+    Object.defineProperty object, 'Stub', configurable: true, enumerable: false, get: -> (args...) ->
+
+        ### MOCKER_FUNCTION ###
+
+        for functions in args
+
+            for name of functions
+
+                fn = functions[name]
+
+                delete functions[name]
+
+                functions['_' + name] = fn
+
+        object.Does.apply null, args
+
+
+    Object.defineProperty object, 'stub', configurable: true, enumerable: false, get: -> (args...) ->
+
+        ### MOCKER_FUNCTION ###
+
+        for functions in args
+
+            for name of functions
+
+                fn = functions[name]
+
+                delete functions[name]
+
+                functions['_' + name] = fn
+
+        object.does.apply null, args
+
+
+    Object.defineProperty object, 'Does', configurable: true, enumerable: false, get: -> (args...) ->
+
+        ### MOCKER_FUNCTION ###
 
         ### .Does (for expectations on class methods) ###
 
         args.unshift true
 
-        object[expectorNames[1]].apply null, args
+        object.does.apply null, args
 
-    pendingContexts = []
 
     # object[expectorName] = (onClass, args...) ->
 
-    object[expectorNames[1]] = (onClass, args...) ->
+    Object.defineProperty object, 'does', configurable: true, enumerable: false, get: -> (onClass, args...) ->
 
         ### MOCKER_FUNCTION ###
 
@@ -123,9 +219,15 @@ module.exports.create = (object) ->
 
                     fn = functions[name]
 
-                    if name.match /^\$\$/
+                    if name.match /^\$/
 
                         type = 'spy' 
+
+                        name = name[2..]
+
+                    else if name.match /^_/
+
+                        type = 'stub'
 
                         name = name[2..]
 
@@ -188,7 +290,7 @@ module.exports.create = (object) ->
 
                             {type, fn, context} = entities[object.$$id].expectations[name][onClass].shift()
 
-                            if type == 'spy'
+                            if type == 'spy' or type == 'stub'
 
                                 entities[object.$$id].expectations[name][onClass].unshift type: type, fn: fn, context: null
 
@@ -209,9 +311,7 @@ module.exports.create = (object) ->
                             result: null
 
 
-                        if type == 'spy'
-
-                            original = entities[object.$$id].originals[name][onClass].fn || ->
+                        original = entities[object.$$id].originals[name][onClass].fn || ->
 
                         try
 
@@ -221,7 +321,9 @@ module.exports.create = (object) ->
 
                             call.error = e
 
-                        result = original.apply context || object, arguments if original?
+                        if type == 'spy'
+
+                            result = original.apply context || object, arguments
 
                         original = undefined
 
@@ -276,7 +378,7 @@ Object.defineProperty Object.prototype, 'mock',
 
 
 
-pipe.on 'dev.test.after.each', ({test}) ->
+pipeline.on 'dev.test.after.each', ({test}) ->
 
     return unless test.type == 'test'
 
@@ -343,9 +445,9 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
                 else if remaining > 0
 
-                    if type == 'spy'
+                    if type == 'spy' or type == 'stub'
 
-                        result = OK: "Ran spy #{runExpected} times"
+                        result = OK: "Ran #{type} #{runExpected} times"
 
                     else
 
@@ -355,9 +457,9 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
                 else if runUnexpected == 0
 
-                    if type == 'spy'
+                    if type == 'spy' or type == 'stub'
 
-                        result = OK: "Ran spy #{runExpected} times"
+                        result = OK: "Ran #{type} #{runExpected} times"
 
                     else
 
@@ -365,9 +467,9 @@ pipe.on 'dev.test.after.each', ({test}) ->
 
                 else if runUnexpected != 0
 
-                    if type == 'spy'
+                    if type == 'spy' or type == 'stub'
 
-                        result = OK: "Ran spy #{runExpected} times"
+                        result = OK: "Ran #{type} #{runExpected} times"
 
                     else
 
@@ -391,7 +493,7 @@ pipe.on 'dev.test.after.each', ({test}) ->
         test.node.error = e
 
 
-pipe.on 'dev.test.after.each', ({test}) ->
+pipeline.on 'dev.test.after.each', ({test}) ->
 
     return unless test.type == 'test'
 

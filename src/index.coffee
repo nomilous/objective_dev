@@ -1,6 +1,6 @@
-{normalize, sep} = require 'path'
+{normalize, sep, extname, basename, dirname} = require 'path'
 
-{TODO, error} = objective.logger
+{TODO, error, warn} = objective.logger
 
 debug = objective.logger.createDebug 'dev'
 
@@ -168,19 +168,90 @@ module.exports = dev = shared.dev =
             try waiting.pop()()
 
 
+        errors = 0
+
         pipeline.on 'files.recurse.changed', ({path}, next) ->
 
-            if path.match new RegExp "^#{dev.testDir}"
+            runTest = (path) ->
+
+                debug("running test at '#{path}'")
 
                 if objective.currentChild?
 
-                    debug "skipping '#{path}' while running '#{objective.currentChild.config.filename}'"
+                    warn "skipping '#{path}' while running '#{objective.currentChild.config.filename}'"
 
                     return next()
 
                 delete require.cache[process.cwd() + sep + path]
 
                 require process.cwd() + sep + path
+
+                return next()
+
+
+            runTest path if path.match new RegExp "^#{dev.testDir}"
+
+            if path.match new RegExp "^#{dev.sourceDir}"
+
+                if path.match /\.coffee$/
+
+                    if dev.compileTo?
+
+                        destination = path.replace new RegExp("^#{dev.sourceDir}"), dev.compileTo
+
+                        destination = destination.replace /\.coffee$/, '.js'
+
+                        debug('start compiling coffee from %s to %s', path, destination)
+
+                        try
+
+                            compiled = objective.coffee.compile fs.readFileSync(path).toString(), 
+                                bare: true
+                                filename: path
+
+                            fs.writeFileSync destination, compiled
+
+                            if errors > 0
+                                error 'resolved'
+                                errors = 0
+
+                            debug('done compiling coffee from %s to %s', path, destination)
+
+                            TODO 'multiple tests from uuids in sourcefile header'
+
+                            testPath = path.replace new RegExp("^#{dev.sourceDir}"), dev.testDir
+
+                            dir = dirname testPath
+
+                            base = basename testPath, ext = extname testPath
+
+                            testPath = dir + sep + base + '_spec'
+
+                            files = fs.readdirSync dir
+
+                            for file in files
+
+                                mExt = extname file
+                                mBase = basename file, mExt
+
+                                if mBase == base + '_spec'
+
+                                    if ['js', 'coffee'].indexOf mExt >= 0
+
+                                        foundTest = dir + sep + mBase + mExt
+
+                            if foundTest then return runTest foundTest
+
+                            warn 'missing objective at ' + dir + sep + base + '_spec' + ext
+
+
+                        catch e
+                            error e.toString()
+                            errors++
+                            return next()
+                        
+
+                       
 
                 return next()
 

@@ -9,12 +9,6 @@ colors = require 'colors'
 
 EOL = require('os').EOL
 
-TODO 'Final stats after test (or test all)'
-TODO 'runs initiated by file changes may overlap, fix (perhaps {noOvertake} pipe on change watcher'
-TODO 'test timeouts error'
-TODO 'reporter calls null tests pending - actually bdd does it'
-TODO 'only walk from test onward, or ignore objective-dev'
-
 fs = require 'fs'
 
 firstfail = false
@@ -78,7 +72,7 @@ module.exports.enable = ->
         data.exitCode = failed
 
 
-    pipeline.on 'dev.test.before.all', (payload) ->
+    # pipeline.on 'dev.test.before.all', (payload) ->
 
 
 
@@ -176,6 +170,7 @@ module.exports.enable = ->
 
                 return
 
+
         console.log() if firstfail
 
         firstfail = false
@@ -191,7 +186,7 @@ module.exports.enable = ->
 
         else if test.error.name == 'ExpectationError'
 
-            console.log "  " + test.error.stack.split(EOL)[0].bold.red
+            console.log "  " + test.error.toString().bold.red
 
             try
 

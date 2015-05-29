@@ -9,26 +9,37 @@ module.exports.enable = ->
 
     dev = require '../'
 
-    enabled = true
-
     origPrepareStackTrace = Error.prepareStackTrace
 
     Error.prepareStackTrace = (_, stack) -> stack
 
-    # originalShowError = dev.showError
+    got = false
 
-    # dev.showError = false
+    for id of objective.repls
 
-    # dev.reporters.default.enable()
+        got = true if objective.repls[id].grabbed
 
+    unless got
+
+        # no repl has the stream, send it nowhere 
+        # so that stacks console is not interrupted
+        # by background text
+
+        devnull = require 'dev-null'
+        console._stdout = devnull()
+        console._stderr = devnull()
+        objective.logger.setStream devnull()
+
+    # or use 'grab' in attached repl 
+
+
+    enabled = true
 
 module.exports.disable = ->
 
     Error.prepareStackTrace = origPrepareStackTrace
 
-    # dev.showError = originalShowError
-
-    # dev.reporters.default.disable()
+    enabled = false
 
 
 blessed = require 'blessed'
@@ -246,9 +257,11 @@ render = (browsing = false) ->
     failsText = """
     #{filename}
     #{heading1}
+
     #{previousTest()}
     #{currentTest()}
     #{nextTest()}
+    
     #{heading2}
     #{heading3}
 
@@ -371,8 +384,6 @@ pipeline.on 'prompt.commands.register.ask', (command) ->
 
             module.exports.enable()
 
-            objective.plugins.dev.reporters.default.disable()
-
             close = callback
 
             unless screen?
@@ -392,7 +403,6 @@ pipeline.on 'prompt.commands.register.ask', (command) ->
 
                 screen.append text
 
-
             try
 
                 blessed.program().clear()
@@ -402,9 +412,6 @@ pipeline.on 'prompt.commands.register.ask', (command) ->
             text.setContent "Waiting for test."
 
             screen.render()
-
-
-
 
 
         help: """

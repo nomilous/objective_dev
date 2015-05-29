@@ -4,9 +4,9 @@ module.exports.default = require './default'
 
 pipeline.on 'dev.test.after.all', (payload) ->
 
-    {functions, tree} = payload
-
     # assemble stats
+
+    {functions, tree} = payload
 
     allFailed = false
 
@@ -70,4 +70,3 @@ pipeline.on 'dev.test.after.all', (payload) ->
         pending: pending
         totalTestDuration: totalHookDuration
         totalHookDuration: totalHookDuration
-

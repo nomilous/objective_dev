@@ -1,3 +1,15 @@
+module.exports.$$name = 'dev'
+
+module.exports.create = (root, config, callback) ->
+
+    callback null, {}
+
+
+
+
+return
+
+
 {normalize, sep, extname, basename, dirname} = require 'path'
 
 {TODO, error, warn} = objective.logger

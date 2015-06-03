@@ -8,9 +8,19 @@ todo
 
 docs
 ----
+## Conventions
 
-* [sS]ubject injection
+## Configurations
 
+## Prompt Tools
+
+## Repl
+
+## Test Architecture and Flow Contol
+
+## Reporter
+
+## Module Injection
 
 ## Function Expectations
 
@@ -89,5 +99,8 @@ fs.stub({
 * It has the same symantics as `.does()` for Classes (ie. `.Stub`)
 
 ### Intricasies. (All together now)
+
+
+## `wait()` & `see.`
 
 

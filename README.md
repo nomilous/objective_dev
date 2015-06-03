@@ -101,14 +101,23 @@ server.start('./config.json');
 
 ### Intricasies. (All together now)
 
-* `.does()` and `.mock()` create expectations.
-* `.spy()` and `.stub()` do those things.
+* `.does()` and `.mock()` create <b>expectations</b>.
+* `.spy()` and `.stub()` create <b>spies</b> and <b>stubs</b>.
 * They can all be used in conjunction.
 * The resulting behaviour gets complicated.
 
 #### First try to explain in words.
 
-* words.
+* <b>stub</b> on top of <b>expectations</b> invalidates them. Test no longer fails.
+* <b>spy</b> on top of <b>expectations</b> does not call on to the `original` function but rather to the expectation (next call, next expectation). Test will still fail if expectations not met.
+* <b>expectation</b> on top of <b>spy</b> still runs the spy (first). Test will still fail if expectation not met.
+* <b>expectation</b> on top of <b>stub</b> will fail test if unmet.
+* <b>stub</b> on top of <b>spy</b> invalidates it. Spy will no longer be called.
+* <b>spy</b> on top of <b>stub</b> will first call the spy then the stub (as if the stub is the original function)
+* <b>spy</b> on top of <b>spy</b> will call both ahead of original unless there is a stub between them.
+* <b>stub</b> on top of <b>stub</b> will call only the most recent.
+
+
  
 ## `wait()` & `see.`
 

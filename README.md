@@ -138,17 +138,18 @@ objective(function(){
 
         context('special case y', function(should){
 
-            it 'should be moot', function() {
+            it 'should call both', function() {
 
                 // Expectation on top of stub
                 MyThing.does({
                     fn: function(arg1) { // 3
-                        arg1.should.equal('moot')
+                        arg1.should.equal('ok');
                     }
                 });
 
-                // Test will fail if fn() and y() not called in MyThing
-                MyThing.somethingThatShouldCallFnWithMoot();
+                // Test will fail if fn() (from 3) and y() (from 2) 
+                // not called in MyThing.below
+                MyThing.somethingThatShouldCallBoth();
 
             });
 

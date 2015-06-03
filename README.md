@@ -88,19 +88,28 @@ require('module');
 
 ```js
 // pretend some specific file is present
+thisTestConfig = {};
 fs.stub({
     readFileSync: function(filename) {
-        if (filename == './config.json') return JSON.stringify({});
+        if (filename == './config.json') return JSON.stringify(thisTestConfig);
         original(filename); // if not, pass onward to original readFileSync
     }
 });
-// server.start('./config.json');
+server.start('./config.json');
 ```
 * It has the same symantics as `.does()` for Classes (ie. `.Stub`)
 
 ### Intricasies. (All together now)
 
+* `.does()` and `.mock()` create expectations.
+* `.spy()` and `.stub()` do those things.
+* They can all be used in conjunction.
+* The resulting behaviour gets complicated.
 
+#### First try to explain in words.
+
+* words.
+ 
 ## `wait()` & `see.`
 
 

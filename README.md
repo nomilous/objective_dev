@@ -37,7 +37,7 @@ thing.does({
     }
 });
 ```
-* They can only be created in beforeEachs and tests ('it's)
+* They can only be created in beforeEachs and tests.
 * The test will fail unless the expected funcitons are called exactly once.
 * If they are expected to be called twice, use thing.does(..) twice to say so.
 
@@ -62,6 +62,7 @@ mock(new ClassThing()).does(...);
 ### `.spy()`
 
 * This creates a spy on the specified function.
+* It can only be created in beforeEachs and tests.
 * The spy function is run and receives the arguments as called.
 * The original function is run after the spy.
 * It is not an expectation. ie. Test will not fail if spy not called. (Unless... see Intricasies below)
@@ -84,6 +85,7 @@ require('module');
 ### `.stub()`
 
 * This replaces the original function.
+* It can only be created in beforeEachs and tests.
 * It is not an expectation. ie. Test will not fail if stub not called. (Unless... see Intricasies below)
 
 ```js
@@ -117,8 +119,75 @@ server.start('./config.json');
 * <b>spy</b> on top of <b>spy</b> will call both ahead of original unless there is a stub between them.
 * <b>stub</b> on top of <b>stub</b> will call only the most recent.
 
+#### Example.
 
+```js
+objective(function(){
+    
+    context('y', function(MyThing) {
+
+        beforeEach(function(){
+
+            // Never call original MyThing.fn() for entire context
+            MyThing.stub({fn:function(){}}); // 1
+
+            // Expect y() to be called with each test
+            MyThing.does({y:function(){}});  // 2
+
+        });
+
+        context('special case y', function(should){
+
+            it 'should be moot', function() {
+
+                // Expectation on top of stub
+                MyThing.does({
+                    fn: function(arg1) { // 3
+                        arg1.should.equal('moot')
+                    }
+                });
+
+                // Test will fail if fn() and y() not called in MyThing
+                MyThing.somethingThatShouldCallFnWithMoot();
+
+            });
+
+            it 'shouldnt call either', function() {
+
+                // The expectation created in the previous test (3) is no
+                // longer in play. But the stub from (1) and the expectation
+                // from (2) are still present because they were set in a
+                // related (ancestral) beforeEach.
+                //      
+                //     note: beforeEachs run all the way to 
+                //           the test root before every it
+
+                MyThing.spy({
+                    fn: function() {
+                        throw new Error('Should not run fn()');
+                    }
+                    // Cannot remove the expectation from (2) with a spy...
+                    // because the spy still calls onward to the expectation
+                });
+
+                MyThing.stub({
+                    // so stub it...
+                    y:function(){
+                        throw new Error('Should not run y()');
+                    }
+                });
+
+                MyThing.somethingThatShouldntCallEither();
+
+            });
+
+        });
+
+    });
+
+});
+```
  
-## `wait()` & `see.`
+## `wait()` & `see.*`
 
 

@@ -228,8 +228,6 @@ objective 'Explain', ->
         vlad.does charityWork: -> 'mend fences'
 
         # stub invalidates preceding expectations
-        # and permanently replaces the function 
-        # for the duration of the test steprun
 
         vlad.charityWork().should.equal 'mend fences'
         # vlad.charityWork() # fail, called too many times.

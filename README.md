@@ -201,7 +201,9 @@ objective 'Explain', ->
         charityWork: -> 'no way!'
 
 
-    before -> mock 'vlad', new Impaler()
+    before -> mock 'vlad', new Impaler()        # same instance for all tests
+
+    # beforeEach -> mock 'vlad', new Impaler()  # new instance for each test
 
     it 'shows original function', (vlad) ->
 

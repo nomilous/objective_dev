@@ -22,6 +22,8 @@ docs
 
 ## Module Injection
 
+## Making Mockable
+
 ## Function Expectations
 
 Function expectations can only be created in <b>beforeEach</b>s and <b>tests</b>.

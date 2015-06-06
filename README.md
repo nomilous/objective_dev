@@ -3,7 +3,7 @@
 
 # objective-dev
 
-An [objective][1] plugin for testing - <b>And other goodies.</b>
+An [objective][1] plugin for testing -- And other goodies.
 
 ## Summary
 

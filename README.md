@@ -11,8 +11,8 @@ An [objective][1] plugin for testing -- And other goodies.
 * Create a default dev objective.
 
 ```bash
-objective --create-dev --js ## --json # Writes the config 
-                                        # into a parallel json instead.
+objective --create-dev --js ## --json # Writes the config
+                                      # into a parallel json instead.
 . warn created file objective.js +0ms
 
 ```

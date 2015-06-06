@@ -1,13 +1,7 @@
 # objective-dev
 
-todo
-----
-* online creation
-* collision warn
-* the actual testing
+## Summary
 
-docs
-----
 ## Conventions
 
 ## Configurations
@@ -33,15 +27,15 @@ Function expectations can only be created in <b>beforeEach</b>s and <b>tests</b>
 * These are both the same. They create function expectations.
 ```js
 thing.does({
-    functionName: function() {
+    expectedFunction: function() {
         
     },
-    anotherFunction: function(arg1) {
+    another: function(arg1) {
         assert(arg1,...)
     }
 });
 ```
-* The test will fail unless the expected funcitons are called exactly once.
+* The test will fail unless the expected funcitons are each called exactly once.
 * If they are expected to be called twice, use thing.does(..) twice to say so.
 
 ```js
@@ -75,8 +69,8 @@ fs.spy({
     readFileSync: function(filename) {
         console.log('readFileSync(%s...',filename);
     },
-    lstatSync: function(filename) {
-        console.log('lstatSync(%s...',filename);
+    statSync: function(filename) {
+        console.log('statSync(%s...',filename);
     }
 });
 require('module');
@@ -95,7 +89,7 @@ thisTestConfig = {};
 fs.stub({
     readFileSync: function(filename) {
         if (filename == './config.json') return JSON.stringify(thisTestConfig);
-        original(filename); // if not, pass onward to original readFileSync
+        mock.original(filename); // if not, pass onward to original readFileSync
     }
 });
 server.start('./config.json');

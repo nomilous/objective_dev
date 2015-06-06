@@ -2,7 +2,64 @@
 
 ## Summary
 
-## Conventions
+## Test Tools
+
+The testing toolkit has followed mocha's conventions, but with some teaks and additions.
+
+### Context Nodes
+
+### Tests
+
+### Hooks
+
+#### `before()` and `xbefore()`
+
+* These run <b>beforeAll</b>.
+* They run (or <b>x</b>don't run) once and only once.
+* They run before any tests or contexts.
+* They do not run if the are no tests.
+* For coffee-script pleasure, this can also be done:
+
+```coffee
+before
+    each: ->
+    all: ->
+```
+
+#### `beforeEach()` and `xbeforeEach()`
+
+* These run <b>beforeEach</b>.
+* They run up the tree, ie:
+
+```js
+beforeEach(function(){});
+
+context('nested', function(){
+     beforeEach(function(){});
+
+     context('deeper', function(){
+        beforeEach(function(){});
+
+        // All three beforeEaches run before this 
+        it();
+
+        // And all again before this
+        it();
+     });
+});
+```
+
+#### `beforeAll()`
+
+* Same as `before()`. Just clearer.
+* Can also do <b>x</b>... (they all can)
+
+#### `after()` and `afterEach()` and `afterAll()`
+
+* Differs from `before()`s. 
+* In the same way that `Once upon a time,` differs from `Happily ever after.`
+
+### Special Operators
 
 ## Configurations
 

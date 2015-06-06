@@ -7,6 +7,73 @@ An [objective][1] plugin for testing and other goodies.
 
 ## Summary
 
+* You've installed [objective][1] globally. 
+* Create a default dev objective.
+
+```bash
+> objective --create-dev --js ## --json # Writes the config into a parallel json instead.
+. warn created file objective.js +0ms
+>
+```
+
+* It wrote the file `objective.js` containing the configs necessary to run <b>objective-dev</b>
+
+```js
+objective({
+  title: 'Titled Objective', 
+  uuid: 'a9b74ee3-eef2-495e-827e-237728c0c452', // for onlineness (later)
+  description: '',
+  repl: {
+    // can attach a second repl (objective --attach; in same dir)
+    listen: '/tmp/socket-a9b74ee3-eef2-495e-827e-237728c0c452'
+  },
+  plugins: {
+    'objective-dev': {
+      testDir: 'spec',
+      testAppend: '_spec', // spec dir might contain more than tests, how to match them
+      sourceDir: 'lib'
+    }
+  }
+}).run(function(recurse) {
+
+  // recurse lib and spec directories for files to watch / run tests on change
+  return recurse(['lib', 'spec'], {
+    createDir: true // create lib and spec dirs if not present
+  }).then(function() {
+    // do other things after recurse
+  });
+});
+```
+
+* To run the objective.
+
+```bash
+objective
+DEBUG=* objective # for info junkies, p.s. best to always keep error,warn in the debug matchstring.
+```
+
+* The objective runs all the tests it finds in the specified <b>testDir</b>.
+* It has also started watching all <b>sourceDir</b> and <b>testDir</b> files. 
+* On file changes it will re-run tests appropriately (modules are flushed as necessary).
+* The objective now presents with a repl prompt.
+* The repl has access to node's global, attached is the objective
+* e.g.
+
+```bash
+Titled Objective> objective.logger.warn('message')
+  warn message +5s
+undefined
+
+Titled Objective> objective.plugins.dev  (tab, tab, tab)
+Titled Objective> 
+```  
+
+## Running Silently on Commandline
+
+For continuous deploment type activities (travis, circle, codeship & co)
+
+* pending
+
 ## Configurations
 
 ## Prompt Tools
@@ -111,8 +178,6 @@ context('nested', function(){
 #### `mock()`
 
 #### `wait()` & `see.*`
-
-## Reporter
 
 ## Module Injection
 
@@ -404,5 +469,6 @@ objective 'Explain', ->
 
 ```
 
+## Reporter
 
 

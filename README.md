@@ -1,6 +1,17 @@
+[1]:https://github.com/nomilous/objective
+[2]:#module-injection
+
 # objective-dev
 
+An [objective][1] plugin for testing and other goodies.
+
 ## Summary
+
+## Configurations
+
+## Prompt Tools
+
+## Repl
 
 ## Test Tools
 
@@ -8,16 +19,37 @@ The testing toolkit has followed mocha's conventions, but with some teaks and ad
 
 ### Context Nodes
 
-### Tests
+Context nodes are used to organize tests into groups or to arrange things such that a certain sequence of before hooks runs ahead to set up the context being tested.
+
+#### `context()` and `describe()`
+
+* These are exactly the same.
+* Also supported is `context.only()` to skip all tests not within the context.
+* Also supported is `xcontext()` to skip all tests within the context.
+* `context()` and `describe()` perform [Module Injection][2]. (see below)
 
 ### Hooks
 
+* All hooks support [Module Injection][2]. (see below)
+* `done()` is not the first argument passed to the hook, it is passed at the argument labelled 'done', ie:
+
+```js
+before(function(InjectedModule, http, done) {
+    InjectedModule; // from lib/**/injected[_-M/m]odule.js
+    http;          // node http module
+    done();
+});
+
+```
+* Exceptions and Timeouts in hooks cause the entire test run to terminate. (PENDING - run appropriate afters tho)
+
 #### `before()` and `xbefore()`
 
-* These run <b>beforeAll</b>.
+* These run <b>beforeAll</b> tests.
 * They run (or <b>x</b>don't run) once and only once.
 * They run before any tests or contexts.
-* They do not run if the are no tests.
+* They do not run if there are no tests.
+* There can be as many as necessary.
 * For coffee-script pleasure, this can also be done:
 
 ```coffee
@@ -28,16 +60,18 @@ before
 
 #### `beforeEach()` and `xbeforeEach()`
 
-* These run <b>beforeEach</b>.
+* These run <b>beforeEach</b> test.
 * They run up the tree, ie:
 
 ```js
 beforeEach(function(){});
 
 context('nested', function(){
-     beforeEach(function(){});
 
-     context('deeper', function(){
+    beforeEach(function(){});
+
+    context('deeper', function(){
+
         beforeEach(function(){});
 
         // All three beforeEaches run before this 
@@ -52,28 +86,35 @@ context('nested', function(){
 #### `beforeAll()`
 
 * Same as `before()`. Just clearer.
-* Can also do <b>x</b>... (they all can)
 
 #### `after()` and `afterEach()` and `afterAll()`
 
 * Differs from `before()`s. 
 * In the same way that `Once upon a time,` differs from `Happily ever after.`
 
+
+### Tests
+
+#### `it()` and `xit()` and `it.only()`
+
+* Modules can be injected in the same manner as hooks and contexts.
+* PENDING - calling done multiple times fails the test.
+* `this.timeout(n)` modifies the test timeout.
+* `this` in the test is the same (context) as `this` in all hooks before and after
+* More then one `.only()` - then both run.
+
+
 ### Special Operators
 
-## Configurations
+#### `flush()`
 
-## Prompt Tools
+#### `mock()`
 
-## Repl
-
-## Test Architecture and Flow Contol
+#### `wait()` & `see.*`
 
 ## Reporter
 
 ## Module Injection
-
-## Making Mockable
 
 ## Function Expectations
 
@@ -363,7 +404,5 @@ objective 'Explain', ->
 
 ```
 
- 
-## `wait()` & `see.*`
 
 

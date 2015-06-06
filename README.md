@@ -3,7 +3,7 @@
 
 # objective-dev
 
-An [objective][1] plugin for testing and other goodies.
+An [objective][1] plugin for testing - <b>And other goodies.</b>
 
 ## Summary
 
@@ -11,14 +11,16 @@ An [objective][1] plugin for testing and other goodies.
 * Create a default dev objective.
 
 ```bash
-> objective --create-dev --js ## --json # Writes the config into a parallel json instead.
+objective --create-dev --js ## --json # Writes the config 
+                                        # into a parallel json instead.
 . warn created file objective.js +0ms
->
+
 ```
 
 * It wrote the file `objective.js` containing the configs necessary to run <b>objective-dev</b>
 
 ```js
+// objective.js
 objective({
   title: 'Titled Objective', 
   uuid: 'a9b74ee3-eef2-495e-827e-237728c0c452', // for onlineness (later)
@@ -49,14 +51,16 @@ objective({
 
 ```bash
 objective
-DEBUG=* objective # for info junkies, p.s. best to always keep error,warn in the debug matchstring.
+# or, for info junkies
+DEBUG=* objective
+# p.s. best to always keep error,warn in the debug matchstring.
 ```
 
 * The objective runs all the tests it finds in the specified <b>testDir</b>.
-* It has also started watching all <b>sourceDir</b> and <b>testDir</b> files. 
+* It also starts a watch on all <b>sourceDir</b> and <b>testDir</b> files. 
 * On file changes it will re-run tests appropriately (modules are flushed as necessary).
 * The objective now presents with a repl prompt.
-* The repl has access to node's global, attached is the objective
+* The repl has access to node's global. Attached is the objective itself.
 * e.g.
 
 ```bash

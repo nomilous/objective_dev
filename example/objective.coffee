@@ -40,7 +40,7 @@ objective 'Example Dev',
     #       But they are children of their respective root.
     #
 
-    # .then -> recurse ['spec', 'src'], createDir: true
+    .then -> recurse ['spec', 'src'], createDir: true
 
     #
     # Recurse has completed. Start the prompt. The plugin (objective-dev)

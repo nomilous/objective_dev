@@ -80,9 +80,9 @@ For continuous deploment type activities (travis, circle, codeship & co)
 
 ## Configurations
 
-## Prompt Tools
+### Linking
 
-## Repl
+## Repl Tools
 
 ## Test Tools
 

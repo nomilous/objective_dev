@@ -1,0 +1,16 @@
+{
+  "name": "example-dev",
+  "version": "0.0.1",
+  "description": "* example using objective-dev plugin * see objective.coffee",
+  "main": "index.js",
+  "dependencies": {
+    "dependancy": "^1.0.0",
+    "should": "^6.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

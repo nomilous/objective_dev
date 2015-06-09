@@ -4,7 +4,7 @@
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "TEST_GLOBAL=test node_modules/.bin/mocha --compilers coffee:coffee-script/register test/**/*_spec.*"
+    "test": "OBJECTIVE_DEV_PREPEND=test_ node_modules/.bin/mocha --require should --compilers coffee:coffee-script/register test/**/*_spec.* test/*_spec.*"
   },
   "repository": {
     "type": "git",

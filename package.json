@@ -4,7 +4,7 @@
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "TEST_GLOBAL=test node_modules/.bin/mocha --compilers coffee:coffee-script/register test/**/*_spec.*"
   },
   "repository": {
     "type": "git",
@@ -27,5 +27,10 @@
     "shortid": "^2.2.2",
     "uuid": "^2.0.1",
     "when": "^3.7.3"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.9.3",
+    "mocha": "^2.2.5",
+    "should": "^6.0.3"
   }
 }

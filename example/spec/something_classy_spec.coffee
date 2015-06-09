@@ -16,7 +16,6 @@ objective 'SomethingClassy',
 
     # skipping because of context.only() at the end
 
-
     before ->
 
     after -> 
@@ -51,7 +50,7 @@ objective 'SomethingClassy',
         # 
 
 
-    xcontext 'during the day', ->
+    context 'during the day', ->
 
         it 'eats', (done, lloyd) ->
 

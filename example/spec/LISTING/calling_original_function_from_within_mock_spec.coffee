@@ -12,19 +12,15 @@ objective ->
 
             # fs.spy "#{funcName}": ->
             #     console.log funcName, arguments
-            # ... would achieve the same thing
 
 
             # stub that calls the original function (same as spy)
 
             fs.stub "#{funcName}": ->
 
-                # console.log ooo: original
-
                 console.log funcName, arguments
 
                 mock.original.apply null, arguments
-
 
 
 

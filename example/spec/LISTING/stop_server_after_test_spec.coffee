@@ -4,9 +4,6 @@ objective 'Stop server after test', (should) ->
 
     before (http, express, done) ->
 
-        mock('moo', fn: -> 1)
-        .stub fn: -> 2
-
         http.stub createServer: (app) ->
 
             # replacing http.createServer()
@@ -35,16 +32,8 @@ objective 'Stop server after test', (should) ->
 
 
 
-    it 'server and app', (server, app, moo) ->
-
-        moo.fn().should.equal 2
+    it 'server and app', (server, app) ->
 
 
-
-    it 'server and app', (server, app, moo) ->
-
-        moo.fn().should.equal 2
-
-
-
+    it 'server and app', (server, app) ->
 

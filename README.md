@@ -51,6 +51,7 @@ objective({
 
 ```bash
 objective
+# if finds objective.js or objective.coffee in the local directory and runs it
 # or, for info junkies
 DEBUG=* objective
 # p.s. best to always keep error,warn in the debug matchstring.

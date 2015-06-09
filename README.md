@@ -5,6 +5,8 @@
 
 An [objective][1] plugin for testing -- And other goodies.
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nomilous/objective-dev?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 ## Summary
 
 * You've installed [objective][1] globally. 
@@ -51,7 +53,7 @@ objective({
 
 ```bash
 objective
-# if finds objective.js or objective.coffee in the local directory and runs it
+# it finds objective.js or objective.coffee in the local directory and runs it
 # or, for info junkies
 DEBUG=* objective
 # p.s. best to always keep error,warn in the debug matchstring.

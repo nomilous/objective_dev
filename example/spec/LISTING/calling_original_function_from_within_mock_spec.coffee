@@ -1,5 +1,7 @@
 objective ->
 
+    #x
+    #x
     xit 'allows calling original function from within mock function', (fs) ->
 
         # stub everything on fs
@@ -10,7 +12,7 @@ objective ->
 
             # fs.spy "#{funcName}": ->
             #     console.log funcName, arguments
-
+            # ... would achieve the same thing
 
 
             # stub that calls the original function (same as spy)

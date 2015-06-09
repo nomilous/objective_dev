@@ -11,7 +11,7 @@ global.objective =
         error: ->
 
             try global.objective.logger.onError.apply null, arguments
-
+        
         createDebug: -> ->
 
     coffee: 

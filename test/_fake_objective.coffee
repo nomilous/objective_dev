@@ -4,6 +4,10 @@ global.objective =
 
         TODO: ->
 
+        info: ->
+
+            try global.objective.logger.onInfo.apply null, arguments
+
         warn: ->
 
             try global.objective.logger.onWarn.apply null, arguments

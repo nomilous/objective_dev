@@ -5,15 +5,19 @@ describe 'Main Handler', ->
     dev      = require '../lib/'
     handler  = require '../lib/handler'
     compiler = require '../lib/compiler'
+    walker   = require '../lib/tester/walker'
+    runner   = require '../lib/tester/runner'
 
     root = 
         config: uuid: 'YYY'
         home: 'home'
 
-    before (done) -> dev.create root, {}, done
+    before (done) -> 
+
+        dev.create root, {}, done
 
     beforeEach ->
-
+        walker.reset root: root, config: {}
         root.loadChild = -> then: (resolve) -> resolve()
 
     after -> objective.pipeline.emit = ->
@@ -139,20 +143,28 @@ describe 'Main Handler', ->
                     path: 'test/one_test.js'
                     ->
 
-            xit 'completes the wait() if re-running the waiting testfile', (done) ->
+            it 'completes the wait() if re-running the waiting testfile', (done) ->
 
-                dev.runStep = 
-                    waiting: {}
-                    config: filename: 'test/one_test.js'
+                
+                test_it 'test', -> test_wait()
+                test = dev.tree.children[0]
+                step = runner.createStep 'info', 'test', test, test.fn
 
-                console.log dev.runStep
+                objective.onWarn = -> console.log arguments
+                reject = -> 
+                resolve = -> done() # wait resolved
 
-                Object.defineProperty global, 'test_see', get: -> done()
+                dev.roots.YYY.config.filename = 'test/one_test.js'
 
+                # start test step that wait()s
+                runner.runStep root, dev.roots.YYY.config, {}, step, resolve, reject
+                
                 handler.changedFile
                     root: root,
                     path: 'test/one_test.js'
                     ->
+
+
 
             it 'runs the test', ->
 

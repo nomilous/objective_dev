@@ -11,6 +11,7 @@ describe 'Tester Injector', ->
     # should = require 'should'
 
     before (done) ->
+        delete injector.mocks[key] for key in injector.mocks
         @root = 
             config: 
                 uuid: 'XYZ'
@@ -24,6 +25,7 @@ describe 'Tester Injector', ->
     after ->
         injector.findLocalModule = @findLocalModule
         fs.lstatSync = @lstatSync
+        delete injector.mocks[key] for key in injector.mocks
 
     beforeEach ->
 
@@ -36,6 +38,8 @@ describe 'Tester Injector', ->
 
     context 'on events', ->
 
+        it 'todo'
+
     context 'mock()', ->
 
         it 'creates mocks', (done) ->
@@ -44,8 +48,8 @@ describe 'Tester Injector', ->
 
                 injector.mock 'name1', ob: 'ject'
 
+                injector.mocks.name1.object.$$mockname.should.equal 'name1'
                 injector.mocks.name1.object.should.eql ob: 'ject'
-                injector.mocks.name1.created.should.eql dev.walkStep
                 done()
 
             1 # stop the promise returning from test_context

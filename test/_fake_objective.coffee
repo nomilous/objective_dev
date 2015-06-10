@@ -23,3 +23,10 @@ global.objective =
         createEvent: ->
 
         on: ->
+
+    getCaller: -> file: '', line: '', col: ''
+
+    argsOf: (fn) ->
+        fn.toString().match(/function\s*\((.*)\)/)[1]
+        .replace(/\s/g, '').split(',').filter (arg) ->
+            if arg != '' then return true;

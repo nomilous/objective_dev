@@ -2,51 +2,41 @@ require '../_fake_objective'
 
 describe 'Tester Walker', ->
 
-    should = require 'should'
-
-    walker = require '../../lib/tester/walker'
-
+    should   = require 'should'
+    walker   = require '../../lib/tester/walker'
     injector = require '../../lib/tester/injector'
-
-    dev = require '../../lib'
-
-    shortid = require 'shortid'
+    runner   = require '../../lib/tester/runner'
+    dev      = require '../../lib'
+    shortid  = require 'shortid'
 
     before -> 
-
         @original_generate = shortid.generate
         @original_mock = injector.mock
         @original_inject = injector.load
+        @original_runner = runner.run
 
     beforeEach ->
-
         @args = 
-
             root: {}
             config: 
                 title: 'Objective Title'
             required: {}
 
-        objective.getCaller = -> 'caller info'
-
         shortid.generate = -> 'XXX'
-
         injector.mock = ->
-
         injector.load = ->
-
-        objective.argsOf = -> []
+        runner.run = ->
 
     after ->
-
         shortid.generate = @original_generate
         injector.mock = @original_mock
         injector.load = @original_inject
+        runner.run = @original_runner
 
 
     context 'reset()', ->
 
-        it 'resets the test tree', ->
+        it 'resets the test tree and places the promise', (done) ->
 
             walker.reset @args
 
@@ -65,11 +55,27 @@ describe 'Tester Walker', ->
                 skip: false
                 pend: false
                 children: []
-                info: 'caller info'
+                info:
+                    file: ''
+                    line: ''
+                    col: ''
+                    type: 'root'
                 parent: null
                 path: ['Objective Title']
                 only: false
                 error: null
+
+            promise = objective.strayPromise
+
+            promise.should.equal test_it()
+
+            runner.run = (deferral, root, tree) ->
+
+                tree.should.eql dev.tree
+                done()
+
+            promise.start()
+
 
 
     context 'describe() / context()', ->
@@ -102,11 +108,10 @@ describe 'Tester Walker', ->
             walker.reset @args
 
             injected = []
-            objective.argsOf = -> ['pretend', 'args']
             injector.load = (args...) ->
                 injected.push args[2]
 
-            test_context 'outer', ->
+            test_context 'outer', (pretend, args) ->
 
             injected.should.eql ['pretend', 'args']
 

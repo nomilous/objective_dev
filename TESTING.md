@@ -10,6 +10,10 @@ OBJECTIVE_DEV_PREPEND=test_ node_modules/.bin/mocha \
     --compilers coffee:coffee-script/register \
     test/**/*_spec.* test/*_spec.coffee
 ```
+or
+```bash
+npm run-script continuous
+```
 
 #### once
 

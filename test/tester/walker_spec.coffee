@@ -6,7 +6,7 @@ describe 'Tester Walker', ->
     walker   = require '../../lib/tester/walker'
     injector = require '../../lib/tester/injector'
     runner   = require '../../lib/tester/runner'
-    dev      = require '../../lib'
+    dev      = require '../../'
     shortid  = require 'shortid'
 
     before -> 

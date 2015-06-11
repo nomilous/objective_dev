@@ -2,7 +2,7 @@ require './_fake_objective'
 
 describe 'Main Handler', ->
 
-    dev      = require '../lib/'
+    dev      = require '../'
     handler  = require '../lib/handler'
     compiler = require '../lib/compiler'
     walker   = require '../lib/tester/walker'
@@ -32,7 +32,7 @@ describe 'Main Handler', ->
                 root: root
                 path: 'something.else'
                 ->
-                    dev.roots.YYY.files.should.eql {}
+                    dev.roots.YYY.files.should.eql test: {}, source: {}
 
         it 'adds source and test files to list', ->
 

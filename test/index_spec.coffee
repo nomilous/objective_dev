@@ -2,7 +2,7 @@ require './_fake_objective'
 
 describe 'Module Root', ->
 
-    dev = require '../lib/'
+    dev = require '../'
 
     it 'defines testing tools on global', ->
 

@@ -6,7 +6,7 @@ describe 'Tester Expector', ->
     injector = require '../../lib/tester/injector'
     walker = require '../../lib/tester/walker'
     runner = require '../../lib/tester/runner'
-    dev = require '../../lib'
+    dev = require '../../'
     should = require 'should'
 
     before ->

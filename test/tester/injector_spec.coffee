@@ -2,7 +2,7 @@ require '../_fake_objective'
 
 describe 'Tester Injector', ->
 
-    dev = require '../../lib'
+    dev = require '../../'
     injector = require '../../lib/tester/injector'
     # runner = require '../../lib/tester/runner'
     walker = require '../../lib/tester/walker'

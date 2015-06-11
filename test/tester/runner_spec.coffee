@@ -2,7 +2,7 @@ require '../_fake_objective'
 
 describe 'Tester Runner', ->
 
-    dev = require '../../lib'
+    dev = require '../../'
     walker = require '../../lib/tester/walker'
     runner = require '../../lib/tester/runner'
     promise = require('when').promise

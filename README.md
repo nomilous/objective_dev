@@ -11,7 +11,6 @@ sudo npm install objective --global
 ```
 
 ```bash
-mkdir myNewProject
 cd myNewProject
 objective --create-dev # --js --json
 

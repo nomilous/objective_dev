@@ -10,6 +10,7 @@ objective 'Example Dev',
             compileTo: 'lib'
             testDir: 'spec'
             testAppend: '_spec'
+            runAll: true
             # reporter: 'default'
             # reporters:
             #     default: {}

@@ -16,9 +16,14 @@ describe 'Tester Runner', ->
 
     beforeEach ->
         @args = 
-            root: {}
+            root: 
+                config:
+                    uuid: 'ROOT_UUID'
+                children:
+                    CHILD_UUID: {}
             config:
                 title: 'Objective Title'
+                uuid: 'CHILD_UUID'
             required: {}
         @deferral = resolve: ->
 

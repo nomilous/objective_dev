@@ -16,7 +16,10 @@ describe 'Tester Injector', ->
             config: 
                 uuid: 'XYZ'
             home: 'home'
-        @config = title: 'title'
+            children: CHILD_UUID: {}
+        @config = 
+            title: 'title'
+            uuid: 'CHILD_UUID'
         @findLocalModule = injector.findLocalModule
         @lstatSync = fs.lstatSync
 

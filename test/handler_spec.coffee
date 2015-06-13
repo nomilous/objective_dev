@@ -10,14 +10,18 @@ describe 'Main Handler', ->
 
     root = 
         config: uuid: 'YYY'
+        children: CHILD_UUID: {}
         home: 'home'
+
+    childConfig = 
+        uuid: 'CHILD_UUID'
 
     before (done) -> 
 
-        dev.create root, {}, done
+        dev.create root, childConfig, done
 
     beforeEach ->
-        walker.reset root: root, config: {}
+        walker.reset root: root, config: childConfig
         root.loadChild = -> then: (resolve) -> resolve()
 
     after -> objective.pipeline.emit = ->

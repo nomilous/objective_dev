@@ -13,9 +13,11 @@ describe 'Tester Expector', ->
         @mocker = expector.mocker
         delete injector.mocks[key] for key in injector.mocks
         @args = 
-            root: {}
+            root: 
+                children: CHILD_UUID: {}
             config:
                 title: 'Objective Title'
+                uuid: 'CHILD_UUID'
             required: {}
 
     beforeEach ->

@@ -54,11 +54,11 @@ objective 'Explain the "expection stack" intricasies', (should) ->
 
                 alias.method().should.equal 'expectation'
 
-            xit 'fails', (alias) ->
+            it 'fails', (alias) ->
 
                 # - Too few calls to method()
 
-            xit 'fails', (alias) ->
+            it 'fails', (alias) ->
 
                 # - Too many calls to method()
 
@@ -92,7 +92,7 @@ objective 'Explain the "expection stack" intricasies', (should) ->
                     alias.method().should.equal 'second stub'
 
 
-            xit 'still fails here tho', (alias) ->
+            it 'still fails here tho', (alias) ->
 
                 # - Expectation #2 is back in play
                 # alias.method().should.equal 'expectation'

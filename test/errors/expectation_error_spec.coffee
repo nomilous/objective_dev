@@ -1,3 +1,5 @@
+require '../_fake_objective'
+
 describe 'ExpectationError', ->
 
     {ExpectationError} = require '../../lib/errors'

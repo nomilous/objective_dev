@@ -9,17 +9,28 @@ describe 'Tester Walker', ->
     dev      = require '../../'
     shortid  = require 'shortid'
 
-    before -> 
+    before (done) -> 
         @original_generate = shortid.generate
         @original_mock = injector.mock
         @original_inject = injector.load
         @original_runner = runner.run
 
-    beforeEach ->
         @args = 
-            root: {}
+            root: config: uuid: 'ROOT_UUID'
             config: 
                 title: 'Objective Title'
+            required: {}
+
+        dev.create @args.root, {}, -> done()
+
+    beforeEach ->
+        @args = 
+            root: 
+                config: uuid: 'ROOT_UUID'
+                children: CHILD_UUID: {}
+            config: 
+                title: 'Objective Title'
+                uuid: 'CHILD_UUID'
             required: {}
 
         shortid.generate = -> 'XXX'
@@ -65,7 +76,7 @@ describe 'Tester Walker', ->
                 only: false
                 error: null
 
-            promise = objective.strayPromise
+            promise = objective.childPromise
 
             promise.should.equal test_it()
 
@@ -129,12 +140,12 @@ describe 'Tester Walker', ->
 
     context 'xcontext()', ->
 
-        it 'marks the context as skipped', ->
+        it 'marks the context as pending', ->
 
             walker.reset @args
             test_xcontext 'context', ->
 
-            dev.tree.children[0].skip.should.equal true
+            dev.tree.children[0].pend.should.equal true
 
 
     context 'it()', ->
@@ -162,13 +173,13 @@ describe 'Tester Walker', ->
 
     context 'xit()', ->
 
-        it 'sets skipped', ->
+        it 'sets pending', ->
 
             walker.reset @args
 
             test_xit 'test1', ->
 
-            dev.tree.children[0].skip.should.equal true
+            dev.tree.children[0].pend.should.equal true
 
 
     context 'it.only()', ->

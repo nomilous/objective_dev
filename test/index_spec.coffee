@@ -52,6 +52,7 @@ describe 'Module Root', ->
                 testAppend: '_test'
                 sourceDir: 'lib'
                 reporter: 'default'
+                runAll: false
 
             done()
 

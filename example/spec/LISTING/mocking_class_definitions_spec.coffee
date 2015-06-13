@@ -113,7 +113,7 @@ objective 'Mocking class definitions vs instances', (should) ->
                 Defn.anotherClassMethod().should.equal 'replaced'
 
 
-    it '', -> # - Cleanup happens after each test, this makes the final cleanup visible
+    it 'pending', -> # - Cleanup happens after each test, this makes the final cleanup visible
               #   so that the after hook effectively has a final after  
 
 

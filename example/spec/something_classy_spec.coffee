@@ -34,8 +34,6 @@ objective 'SomethingClassy',
         #                                (some banker)
         #
 
-        console.log 'beforeEach'
-
         mock 'lloyd', new SomethingClassy 'Lloyd Blankfein'
 
         #

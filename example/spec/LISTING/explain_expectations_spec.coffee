@@ -4,116 +4,117 @@ objective 'Explaining', ->
 
         charityWork: -> 'no way!'
 
-
     before -> mock 'vlad', new Impaler()        # same instance for all tests
 
     # beforeEach -> mock 'vlad', new Impaler()  # new instance for each test
 
-    it 'shows original function', (vlad) ->
+    xcontext 'Vlad', ->
 
-        vlad.charityWork().should.equal 'no way!'
+        it 'shows original function', (vlad) ->
 
-    it 'explains expectation', (vlad) ->
+            vlad.charityWork().should.equal 'no way!'
 
-        vlad.does charityWork: -> 'serve soup'
+        it 'explains expectation', (vlad) ->
 
-        # this test fails because charityWork() is never called
+            vlad.does charityWork: -> 'serve soup'
 
-    it 'explain expectation stack sequence', (vlad) ->
+            # this test fails because charityWork() is never called
 
-        vlad.does charityWork: -> 'serve soup'
-        vlad.does charityWork: -> 'tend crops'
-        vlad.does charityWork: -> 'mend fences'
+        it 'explain expectation stack sequence', (vlad) ->
 
-        # expectations are run in the sequence they were created.
+            vlad.does charityWork: -> 'serve soup'
+            vlad.does charityWork: -> 'tend crops'
+            vlad.does charityWork: -> 'mend fences'
 
-        vlad.charityWork().should.equal 'serve soup'
-        vlad.charityWork().should.equal 'tend crops'
-        vlad.charityWork().should.equal 'mend fences'
-        # vlad.charityWork() # fail, called too many times.
+            # expectations are run in the sequence they were created.
 
-    it 'explains the effect of stub', (vlad) ->
+            vlad.charityWork().should.equal 'serve soup'
+            vlad.charityWork().should.equal 'tend crops'
+            vlad.charityWork().should.equal 'mend fences'
+            # vlad.charityWork() # fail, called too many times.
 
-        vlad.does charityWork: -> 'serve soup'
-        vlad.does charityWork: -> 'tend crops'
-        vlad.stub charityWork: ->
-        vlad.does charityWork: -> 'mend fences'
+        it 'explains the effect of stub', (vlad) ->
 
-        # stub invalidates preceding expectations
+            vlad.does charityWork: -> 'serve soup'
+            vlad.does charityWork: -> 'tend crops'
+            vlad.stub charityWork: ->
+            vlad.does charityWork: -> 'mend fences'
 
-        vlad.charityWork().should.equal 'mend fences'
-        # vlad.charityWork() # fail, called too many times.
+            # stub invalidates preceding expectations
 
-    it 'explains stub after expectations', (vlad) ->
+            vlad.charityWork().should.equal 'mend fences'
+            # vlad.charityWork() # fail, called too many times.
 
-        vlad.does charityWork: -> 'serve soup'
-        vlad.does charityWork: -> 'tend crops'
-        vlad.does charityWork: -> 'mend fences'
-        vlad.stub charityWork: -> 'HAVE TANTRUM'
+        it 'explains stub after expectations', (vlad) ->
 
-        # stub is last, all preceding expectations are invalidated
+            vlad.does charityWork: -> 'serve soup'
+            vlad.does charityWork: -> 'tend crops'
+            vlad.does charityWork: -> 'mend fences'
+            vlad.stub charityWork: -> 'HAVE TANTRUM'
 
-        vlad.charityWork().should.equal 'HAVE TANTRUM'
-        vlad.charityWork().should.equal 'HAVE TANTRUM'
-        vlad.charityWork().should.equal 'HAVE TANTRUM'
-        vlad.charityWork().should.equal 'HAVE TANTRUM'
+            # stub is last, all preceding expectations are invalidated
 
-        # no limit to calls (same as stub by itself)
+            vlad.charityWork().should.equal 'HAVE TANTRUM'
+            vlad.charityWork().should.equal 'HAVE TANTRUM'
+            vlad.charityWork().should.equal 'HAVE TANTRUM'
+            vlad.charityWork().should.equal 'HAVE TANTRUM'
 
-    it 'explains the effect of spy', (vlad) ->
+            # no limit to calls (same as stub by itself)
 
-        vlad.spy charityWork: -> console.log 'in spy 1', arguments
-        vlad.spy charityWork: -> console.log 'in spy 2', arguments
+        it 'explains the effect of spy', (vlad) ->
 
-        # spy observes, original function is still called
+            vlad.spy charityWork: -> console.log 'in spy 1', arguments
+            vlad.spy charityWork: -> console.log 'in spy 2', arguments
 
-        vlad.charityWork('arg', 'uments').should.equal 'no way!'
+            # spy observes, original function is still called
 
-        #
-        # outputs:
-        # in spy 1 { '0': 'arg', '1': 'uments' }
-        # in spy 2 { '0': 'arg', '1': 'uments' }
-        #
+            vlad.charityWork('arg', 'uments').should.equal 'no way!'
 
-    it 'explains the effect of spy mixed with expectations', (vlad) ->
+            #
+            # outputs:
+            # in spy 1 { '0': 'arg', '1': 'uments' }
+            # in spy 2 { '0': 'arg', '1': 'uments' }
+            #
 
-        vlad.spy charityWork: -> console.log 'in spy 1', arguments
-        vlad.spy charityWork: -> console.log 'in spy 2', arguments
-        vlad.does charityWork: -> 'serve soup'
-        vlad.spy charityWork: -> console.log 'in spy 3', arguments
+        it 'explains the effect of spy mixed with expectations', (vlad) ->
 
-        vlad.charityWork('arg', 'uments').should.equal 'serve soup'
-        
-        #
-        # outputs:
-        # in spy 1 { '0': 'arg', '1': 'uments' }
-        # in spy 2 { '0': 'arg', '1': 'uments' }
-        # in spy 3 { '0': 'arg', '1': 'uments' }
-        # 
+            vlad.spy charityWork: -> console.log 'in spy 1', arguments
+            vlad.spy charityWork: -> console.log 'in spy 2', arguments
+            vlad.does charityWork: -> 'serve soup'
+            vlad.spy charityWork: -> console.log 'in spy 3', arguments
 
-        # vlad.charityWork() # fail, called too many times.
+            vlad.charityWork('arg', 'uments').should.equal 'serve soup'
+            
+            #
+            # outputs:
+            # in spy 1 { '0': 'arg', '1': 'uments' }
+            # in spy 2 { '0': 'arg', '1': 'uments' }
+            # in spy 3 { '0': 'arg', '1': 'uments' }
+            # 
 
-        # spies are not run on the second call
+            # vlad.charityWork() # fail, called too many times.
 
-    it 'explains spies mixed with stub and expectation', (vlad) ->
+            # spies are not run on the second call
 
-        vlad.spy charityWork: -> console.log 'in spy 1', arguments
-        vlad.spy charityWork: -> console.log 'in spy 2', arguments
-        vlad.does charityWork: -> 'serve soup'
-        vlad.stub charityWork: -> 'IMPALE SOMEBODY'
-        vlad.spy charityWork: -> console.log 'in spy 3', arguments
+        it 'explains spies mixed with stub and expectation', (vlad) ->
 
-        vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
-        vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
-        vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
-        vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
+            vlad.spy charityWork: -> console.log 'in spy 1', arguments
+            vlad.spy charityWork: -> console.log 'in spy 2', arguments
+            vlad.does charityWork: -> 'serve soup'
+            vlad.stub charityWork: -> 'IMPALE SOMEBODY'
+            vlad.spy charityWork: -> console.log 'in spy 3', arguments
 
-        # the stub has invalidated the preceding expectation and spies
+            vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
+            vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
+            vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
+            vlad.charityWork('arg', 'uments').should.equal 'IMPALE SOMEBODY'
 
-        #
-        # outputs:
-        # in spy 3 { '0': 'arg', '1': 'uments' }
-        # in spy 3 { '0': 'arg', '1': 'uments' }
-        # in spy 3 { '0': 'arg', '1': 'uments' }
-        # in spy 3 { '0': 'arg', '1': 'uments' }
-        #
+            # the stub has invalidated the preceding expectation and spies
+
+            #
+            # outputs:
+            # in spy 3 { '0': 'arg', '1': 'uments' }
+            # in spy 3 { '0': 'arg', '1': 'uments' }
+            # in spy 3 { '0': 'arg', '1': 'uments' }
+            # in spy 3 { '0': 'arg', '1': 'uments' }
+            #

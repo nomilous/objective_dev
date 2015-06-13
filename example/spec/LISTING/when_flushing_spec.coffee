@@ -23,7 +23,7 @@ objective 'Explain what flush() does', ->
 
     it 'flushes all node modules required within this objective (test suite)', ->
 
-        flush()
+        flush(true)
 
         required.should.equal ''
 

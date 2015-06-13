@@ -12,7 +12,7 @@ objective 'Example Dev',
             testAppend: '_spec'
             runAll: true
             fullTrace: false
-            reporter: 'Dot'
+            reporter: 'Default'
             # reporters:
             #     default: {}
             #     another:

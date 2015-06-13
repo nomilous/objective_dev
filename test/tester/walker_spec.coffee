@@ -75,6 +75,7 @@ describe 'Tester Walker', ->
                 path: ['Objective Title']
                 only: false
                 error: null
+                reported: false
 
             promise = objective.childPromise
 

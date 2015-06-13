@@ -11,6 +11,7 @@ objective 'Example Dev',
             testDir: 'spec'
             testAppend: '_spec'
             runAll: true
+            fullTrace: true
             # reporter: 'default'
             # reporters:
             #     default: {}

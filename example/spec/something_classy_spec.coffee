@@ -149,6 +149,6 @@ objective 'SomethingClassy',
 
 
 
-    context.only 'lloyd does nothing', ->
+    # context.only 'lloyd does nothing', ->
 
 

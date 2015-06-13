@@ -51,7 +51,7 @@ describe 'Module Root', ->
                 testDir: 'test'
                 testAppend: '_test'
                 sourceDir: 'lib'
-                reporter: 'default'
+                reporter: 'Default'
                 runAll: false
                 fullTrace: false
 

@@ -13,3 +13,4 @@ describe 'Tester Main', ->
             walker.reset = orig
             done()
         tester.onStarting {}, ->
+

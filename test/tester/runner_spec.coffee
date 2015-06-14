@@ -241,17 +241,24 @@ describe 'Tester Runner', ->
                     done()
                 ), 20
 
-            it 'rejects if done is not called and step is hook', (done) ->
+            it 'cancels children if done is not called and step is hook', (done) ->
 
                 hook = dev.tree.hooks.beforeEach[0]
                 fn = hook.fn = (done) -> @timeout 10
                 step = runner.createStep 'info', 'beforeEach', hook, fn
-
-                reject = (e) -> 
-                    e.name.should.equal 'TimeoutError'
-                    done()
+                step.node =
+                    children: [
+                        child = {children: []}
+                    ]
+                reject = ->
                 resolve = ->
+                    should.exist child.cancelled
+                    should.exist child.cancelled.atStep
+                    child.cancelled.error.toString.should.match /TimeoutError/
+                    done()
                 runner.runStep @args.root, @args.config, {}, step, resolve, reject
+
+
 
 
             it 'runs all tests on common context', (done) ->

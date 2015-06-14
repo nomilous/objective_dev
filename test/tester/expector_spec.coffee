@@ -15,13 +15,17 @@ describe 'Tester Expector', ->
         @args = 
             root: 
                 children: CHILD_UUID: {}
+                config: uuid: 'ROOT_UUID_2'
             config:
                 title: 'Objective Title'
                 uuid: 'CHILD_UUID'
             required: {}
 
+        dev.roots.ROOT_UUID_2 = config: {}
+
     beforeEach ->
         expector.mocker = @mocker
+
 
     after -> 
         expector.mocker = @mocker
@@ -75,13 +79,13 @@ describe 'Tester Expector', ->
                     type: {}
 
 
-    xcontext 'mocking and validating', ->
+    context 'mocking and validating', ->
 
         beforeEach ->
 
             @obj = func: -> 'original'
 
-            @error = undefined
+            # @error = undefined
 
             expector.create @obj
 
@@ -97,6 +101,9 @@ describe 'Tester Expector', ->
 
             @step = undefined
 
+            @args.root.children = 
+                CHILD_UUID: tree: children: []
+
             @startStep = (type, fn) =>
 
                 if type == 'beforeAll' then step = dev.tree.hooks.beforeAll[0]
@@ -106,80 +113,83 @@ describe 'Tester Expector', ->
                 else if type == 'test' then step = dev.tree.children[0]
                 @step = step
                 step.fn = fn
+                step.children = [
+                    @child = {children:[]}
+                ]
                 runStep = runner.createStep {}, type, step, step.fn
                 # runStep.node = dev.tree
-                runner.runStep {}, {}, {}, runStep, (->), (e) => @error = e
+                runner.runStep @args.root, {}, {}, runStep, (->), ->
 
         
         it 'does not allow does() or mock() in beforeAll', ->
 
             @startStep 'beforeAll', => @obj.does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @child.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'beforeAll', => @obj.Does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @child.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'beforeAll', => @obj.mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @child.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
 
             @startStep 'beforeAll', => @obj.Mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @child.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
                 
         it 'does not allow does() or mock() in afterAll', ->
 
             @startStep 'afterAll', => @obj.does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'afterAll', => @obj.Does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'afterAll', => @obj.mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
 
             @startStep 'afterAll', => @obj.Mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
                 
         it 'does not allow does() or mock() in afterEach', ->
 
             @startStep 'afterEach', => @obj.does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'afterEach', => @obj.Does()
-            @error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use does\(\) in test or beforeEach\./
 
             @startStep 'afterEach', => @obj.mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
 
             @startStep 'afterEach', => @obj.Mock()
-            @error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
+            @args.root.children.CHILD_UUID.tree.cancelled.error.toString().should.match /ConfigurationError\: Can only use mock\(\) in test or beforeEach\./
                 
         it 'does allow does() or mock() in beforeEach', ->
 
             @startStep 'beforeEach', => @obj.does()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'beforeEach', => @obj.Does()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'beforeEach', => @obj.mock()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'beforeEach', => @obj.Mock()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
         it 'does allow does() or mock() in test', ->
 
             @startStep 'test', => @obj.does()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'test', => @obj.Does()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'test', => @obj.mock()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
             @startStep 'test', => @obj.Mock()
-            should.not.exist @error
+            should.not.exist @child.cancelled
 
         it 'does not allow spy or stub outside test or hook', ->
 

@@ -9,7 +9,7 @@ describe 'ExpectationError', ->
         e = new ExpectationError
         e.should.be.an.instanceOf Error
 
-    it.only 'is not an instance of HookError', ->
+    xit 'is not an instance of HookError', ->
 
         e = new ExpectationError
         console.log(e instanceof HookError)

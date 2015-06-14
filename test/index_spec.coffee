@@ -2,6 +2,22 @@ require './_fake_objective'
 
 describe 'Module Root', ->
 
+    it.only 'json diff', ->
+
+        {
+            one: 1
+            two: 2
+            three: 3
+        }.should.eql {
+            two: 2,
+            four: 4,
+            five: {
+                six: 6,
+                seven: 7
+            }
+        }
+
+
     dev = require '../'
 
     it 'defines testing tools on global', ->

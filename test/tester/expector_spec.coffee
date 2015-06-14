@@ -75,7 +75,7 @@ describe 'Tester Expector', ->
                     type: {}
 
 
-    context 'mocking and validating', ->
+    xcontext 'mocking and validating', ->
 
         beforeEach ->
 
@@ -107,6 +107,7 @@ describe 'Tester Expector', ->
                 @step = step
                 step.fn = fn
                 runStep = runner.createStep {}, type, step, step.fn
+                # runStep.node = dev.tree
                 runner.runStep {}, {}, {}, runStep, (->), (e) => @error = e
 
         

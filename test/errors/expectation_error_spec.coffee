@@ -2,12 +2,17 @@ require '../_fake_objective'
 
 describe 'ExpectationError', ->
 
-    {ExpectationError} = require '../../lib/errors'
+    {ExpectationError, HookError} = require '../../lib/errors'
 
     it 'is an instanceof Error', ->
 
         e = new ExpectationError
         e.should.be.an.instanceOf Error
+
+    it.only 'is not an instance of HookError', ->
+
+        e = new ExpectationError
+        console.log(e instanceof HookError)
 
     it 'is named', ->
 

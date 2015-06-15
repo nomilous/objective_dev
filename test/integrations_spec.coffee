@@ -184,7 +184,8 @@ describe 'Integration Tests', ->
             _after                  -> calls.push 'outer after all 2'
             _it                 '', -> calls.push 'outer it 2'
             _it                 '', -> calls.push 'outer it 3'
-            _xdescribe          '', -> ##############################
+
+            _xdescribe '', -> ##############################
                 _after              -> calls.push 'inner after all 1'
                 _before             -> calls.push 'inner before all 1'
                 _beforeEach         -> calls.push 'inner before each 1'
@@ -214,7 +215,7 @@ describe 'Integration Tests', ->
 
             objective.promised.then ->
 
-                calls.should.eql [ 
+                calls.should.eql [
                     'outer before all 1',
                     'outer before all 2',
                     'outer before each 1',
@@ -226,11 +227,9 @@ describe 'Integration Tests', ->
                     'outer before each 1',
                     'outer it 3',
                     'outer after each 1',
-                    'outer after all 1', # missing
-                    'outer after all 2'  # missing
-
+                    'outer after all 1',
+                    'outer after all 2'
                 ]
-                console.log 'MISSING AFTER ALL'
                 done()
 
             objective.promised.start()
@@ -261,7 +260,8 @@ describe 'Integration Tests', ->
                 _it             '', -> calls.push 'inner it 1'
                 _it             '', -> calls.push 'inner it 2'
                 _it             '', -> calls.push 'inner it 3'
-                _context.only   '', -> #############################
+
+                _context.only '', -> #############################
                     _it         '', -> calls.push 'deeper1 it 1'
                     _after          -> calls.push 'deeper1 after all 1'
                     _before         -> calls.push 'deeper1 before all 1'
@@ -310,14 +310,13 @@ describe 'Integration Tests', ->
                     'deeper1 after all 1',
                     'deeper1 after all 2',
                     'inner after each 1',
-                    'inner after all 1', # missing
-                    'inner after all 2', # missing
+                    'inner after all 1',
+                    'inner after all 2',
                     'outer after each 1'
-                    'outer after all 1', # missing
-                    'outer after all 2'  # missing
+                    'outer after all 1',
+                    'outer after all 2'
 
                 ]
-                console.log 'MISSING AFTER ALL'
                 done()
 
             objective.promised.start()

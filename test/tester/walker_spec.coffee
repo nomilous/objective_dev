@@ -78,7 +78,7 @@ describe 'Tester Walker', ->
                 cancelled: null
                 reported: false
 
-            promise = objective.childPromise
+            promise = objective.promised
 
             promise.should.equal _it()
 

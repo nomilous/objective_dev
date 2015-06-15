@@ -14,9 +14,8 @@ objective 'Example Dev',
             fullTrace: false
             # reporter: 'Dot'
             reporters:
-                Default: {}
+                # Default: {}
                 Dot: {}
-                
             #     another:
             #         with: 'config'
 

@@ -47,7 +47,7 @@ describe 'Tester Injector', ->
 
         it 'creates mocks', (done) ->
 
-            test_context '', ->
+            _context '', ->
 
                 injector.mock 'name1', ob: 'ject'
 
@@ -55,19 +55,19 @@ describe 'Tester Injector', ->
                 injector.mocks.name1.object.should.eql ob: 'ject'
                 done()
 
-            1 # stop the promise returning from test_context
+            1 # stop the promise returning from _context
 
 
     context 'injecting mocks', ->
 
         it 'injects mocks if defined', (done) ->
 
-            test_context '', ->
+            _context '', ->
 
                 injector.mock 'name2', ob: 'ject'
                 injector.mock 'AnotherName', ob: 'ject2'
 
-                test_context '', (name2, AnotherName) ->
+                _context '', (name2, AnotherName) ->
 
                     name2.should.eql ob: 'ject'
                     AnotherName.should.eql ob: 'ject2'
@@ -86,12 +86,12 @@ describe 'Tester Injector', ->
                 argName.should.equal 'AlsoThis'
                 done()
 
-            test_context '', ->
+            _context '', ->
 
                 injector.mock 'name3', ob: 'ject'
                 injector.mock 'AnotherName2', ob: 'ject2'
 
-                try test_context '', (name3, AnotherName2, AlsoThis) ->
+                try _context '', (name3, AnotherName2, AlsoThis) ->
 
             1
 
@@ -111,7 +111,7 @@ describe 'Tester Injector', ->
                 else return isDirectory: -> false
                 
 
-            try test_context '', (MyModule) ->
+            try _context '', (MyModule) ->
             catch e 
                 e.toString().should.match /Cannot find module 'home\/lib\/dir2\/MyModule.js'/
             
@@ -133,7 +133,7 @@ describe 'Tester Injector', ->
                 else return isDirectory: -> false
                 
 
-            try test_context '', (MyModule) ->
+            try _context '', (MyModule) ->
             catch e 
                 e.toString().should.match /Cannot find module 'home\/lib\/dir2\/myModule.js'/
             
@@ -155,7 +155,7 @@ describe 'Tester Injector', ->
                 else return isDirectory: -> false
                 
 
-            try test_context '', (MyModule) ->
+            try _context '', (MyModule) ->
             catch e 
                 e.toString().should.match /Cannot find module 'home\/lib\/dir2\/my-module.js'/
             
@@ -177,7 +177,7 @@ describe 'Tester Injector', ->
                 else return isDirectory: -> false
                 
 
-            try test_context '', (MyModule) ->
+            try _context '', (MyModule) ->
             catch e 
                 e.toString().should.match /Cannot find module 'home\/lib\/dir2\/my_module.js'/
             
@@ -200,7 +200,7 @@ describe 'Tester Injector', ->
             
             @config.filename = 'test/routes/my-module-test.js'  
 
-            try test_context '', (MyModule) ->
+            try _context '', (MyModule) ->
             catch e
                 e.toString().should.match /Cannot find module 'home\/lib\/routes\/my-module.js'/
             
@@ -226,7 +226,7 @@ describe 'Tester Injector', ->
             
             @config.filename = 'test/my-routes/some_test.js'
 
-            try test_context '', (MyRoutes) ->
+            try _context '', (MyRoutes) ->
             catch e
                 e.toString().should.match /Cannot find module 'home\/lib\/my-routes\/index.js'/
             

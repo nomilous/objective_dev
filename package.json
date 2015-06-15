@@ -4,8 +4,8 @@
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "OBJECTIVE_DEV_PREPEND=test_ node_modules/.bin/mocha --full-trace --require should --compilers coffee:coffee-script/register test/**/*_spec.* test/*_spec.*",
-    "continuous": "OBJECTIVE_DEV_PREPEND=test_ node_modules/.bin/mocha --watch --full-trace --require should --compilers coffee:coffee-script/register test/**/*_spec.* test/*_spec.coffee"
+    "test": "OBJECTIVE_DEV_PREPEND=_ node_modules/.bin/mocha --full-trace --require should --compilers coffee:coffee-script/register test/**/*_spec.* test/*_spec.*",
+    "continuous": "OBJECTIVE_DEV_PREPEND=_ node_modules/.bin/mocha --watch --full-trace --require should --compilers coffee:coffee-script/register test/**/*_spec.* test/*_spec.coffee"
   },
   "repository": {
     "type": "git",

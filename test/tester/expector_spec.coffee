@@ -93,11 +93,11 @@ describe 'Tester Expector', ->
 
             runner.reset()
 
-            test_before ->
-            test_beforeEach ->
-            test_it 'test1', -> 1
-            test_after ->
-            test_afterEach ->
+            _before ->
+            _beforeEach ->
+            _it 'test1', -> 1
+            _after ->
+            _afterEach ->
 
             @step = undefined
 

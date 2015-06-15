@@ -150,7 +150,7 @@ describe 'Main Handler', ->
             it 'completes the wait() if re-running the waiting testfile', (done) ->
 
                 
-                test_it 'test', -> test_wait()
+                _it 'test', -> _wait()
                 test = dev.tree.children[0]
                 step = runner.createStep 'info', 'test', test, test.fn
 

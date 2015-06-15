@@ -80,7 +80,7 @@ describe 'Tester Walker', ->
 
             promise = objective.childPromise
 
-            promise.should.equal test_it()
+            promise.should.equal _it()
 
             runner.run = (deferral, root, tree) ->
 
@@ -97,7 +97,7 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_context 'string', ->
+            _context 'string', ->
 
             dev.tree.children.length.should.equal 1
 
@@ -106,8 +106,8 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_context 'outer', ->
-                test_context 'inner', -> # empty means pending
+            _context 'outer', ->
+                _context 'inner', -> # empty means pending
 
             dev.tree.children[0].str.should.equal 'outer'
             dev.tree.children[0].type.should.equal 'context'
@@ -124,7 +124,7 @@ describe 'Tester Walker', ->
             injector.load = (args...) ->
                 injected.push args[2]
 
-            test_context 'outer', (pretend, args) ->
+            _context 'outer', (pretend, args) ->
 
             injected.should.eql ['pretend', 'args']
 
@@ -134,7 +134,7 @@ describe 'Tester Walker', ->
         it 'marks the tree and the context as only', ->
 
            walker.reset @args
-           test_context.only 'context', ->
+           _context.only 'context', ->
 
            dev.tree.only.should.equal true 
            dev.tree.children[0].only.should.equal true
@@ -145,7 +145,7 @@ describe 'Tester Walker', ->
         it 'marks the context as pending', ->
 
             walker.reset @args
-            test_xcontext 'context', ->
+            _xcontext 'context', ->
 
             dev.tree.children[0].pend.should.equal true
 
@@ -156,9 +156,9 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_it 'test1', ->
-            test_context 'context', ->
-                test_it 'test2', ->
+            _it 'test1', ->
+            _context 'context', ->
+                _it 'test2', ->
 
             dev.tree.children[0].type.should.equal 'it'
             dev.tree.children[1].children[0].type.should.equal 'it'
@@ -168,7 +168,7 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_it 'test1', ->
+            _it 'test1', ->
 
             dev.tree.children[0].pend.should.equal true
 
@@ -179,7 +179,7 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_xit 'test1', ->
+            _xit 'test1', ->
 
             dev.tree.children[0].pend.should.equal true
 
@@ -190,7 +190,7 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_it.only 'test1', ->
+            _it.only 'test1', ->
 
             dev.tree.children[0].only.should.equal true
             dev.tree.only.should.equal true
@@ -202,9 +202,9 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_before ->
-            test_context 'context', ->
-                test_before ->
+            _before ->
+            _context 'context', ->
+                _before ->
 
             dev.tree.hooks.beforeAll.length.should.equal 1
             dev.tree.children[0].hooks.beforeAll.length.should.equal 1
@@ -213,7 +213,7 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_before
+            _before
                 each: ->
                 all: ->
 
@@ -226,7 +226,7 @@ describe 'Tester Walker', ->
         it 'does nothing', ->
 
             walker.reset @args
-            test_xbefore ->
+            _xbefore ->
             dev.tree.hooks.beforeAll.length.should.equal 0
 
 
@@ -236,9 +236,9 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_beforeEach ->
-            test_beforeEach ->
-            test_beforeEach ->
+            _beforeEach ->
+            _beforeEach ->
+            _beforeEach ->
 
             dev.tree.hooks.beforeEach.length.should.equal 3
 
@@ -249,14 +249,14 @@ describe 'Tester Walker', ->
 
             walker.reset @args
 
-            test_after ->
-            test_after ->
+            _after ->
+            _after ->
             dev.tree.hooks.afterAll.length.should.equal 2
 
         it 'can do each and all', ->
 
             walker.reset @args
-            test_after
+            _after
                 each: ->
                 all: ->
             dev.tree.hooks.afterAll.length.should.equal 1
@@ -268,9 +268,9 @@ describe 'Tester Walker', ->
         it 'inserts afterEach', ->
 
             walker.reset @args
-            test_afterEach ->
-            test_context 'context', ->
-                test_afterEach ->
+            _afterEach ->
+            _context 'context', ->
+                _afterEach ->
 
             dev.tree.hooks.afterEach.length.should.equal 1
             dev.tree.children[0].hooks.afterEach.length.should.equal 1  
@@ -289,12 +289,12 @@ describe 'Tester Walker', ->
 
             dev.walkStep.step.node.type.should.equal 'root'
 
-            test_context 'STR', ->
+            _context 'STR', ->
 
                 dev.walkStep.step.node.type.should.equal 'context'
                 dev.walkStep.step.node.str.should.equal 'STR'
 
-                test_context 'ING', ->
+                _context 'ING', ->
 
                     dev.walkStep.step.node.str.should.equal 'ING'
                     done()

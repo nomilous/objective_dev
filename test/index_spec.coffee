@@ -6,33 +6,33 @@ describe 'Module Root', ->
 
     it 'defines testing tools on global', ->
 
-        test_mock      .should.be.an.instanceOf Function
-        test_wait      .should.be.an.instanceOf Function
-        test_flush      .should.be.an.instanceOf Function
-        test_it      .should.be.an.instanceOf Function
-        test_it.only      .should.be.an.instanceOf Function
-        test_xit      .should.be.an.instanceOf Function
-        test_before      .should.be.an.instanceOf Function
-        test_beforeEach      .should.be.an.instanceOf Function
-        test_beforeAll      .should.be.an.instanceOf Function
-        test_beforeEach      .should.be.an.instanceOf Function
-        test_beforeEach      .should.be.an.instanceOf Function
-        test_beforeEach      .should.be.an.instanceOf Function
-        test_context      .should.be.an.instanceOf Function
-        test_describe      .should.be.an.instanceOf Function
-        test_context.only      .should.be.an.instanceOf Function
-        test_describe.only      .should.be.an.instanceOf Function
-        test_xdescribe      .should.be.an.instanceOf Function
-        test_xcontext      .should.be.an.instanceOf Function
-        test_after      .should.be.an.instanceOf Function
-        test_afterEach      .should.be.an.instanceOf Function
-        test_afterAll      .should.be.an.instanceOf Function
-        test_xbefore      .should.be.an.instanceOf Function
-        test_xbeforeEach      .should.be.an.instanceOf Function
-        test_xbeforeAll      .should.be.an.instanceOf Function
-        test_xafter      .should.be.an.instanceOf Function
-        test_xafterEach      .should.be.an.instanceOf Function
-        test_xafterAll      .should.be.an.instanceOf Function
+        _mock      .should.be.an.instanceOf Function
+        _wait      .should.be.an.instanceOf Function
+        _flush      .should.be.an.instanceOf Function
+        _it      .should.be.an.instanceOf Function
+        _it.only      .should.be.an.instanceOf Function
+        _xit      .should.be.an.instanceOf Function
+        _before      .should.be.an.instanceOf Function
+        _beforeEach      .should.be.an.instanceOf Function
+        _beforeAll      .should.be.an.instanceOf Function
+        _beforeEach      .should.be.an.instanceOf Function
+        _beforeEach      .should.be.an.instanceOf Function
+        _beforeEach      .should.be.an.instanceOf Function
+        _context      .should.be.an.instanceOf Function
+        _describe      .should.be.an.instanceOf Function
+        _context.only      .should.be.an.instanceOf Function
+        _describe.only      .should.be.an.instanceOf Function
+        _xdescribe      .should.be.an.instanceOf Function
+        _xcontext      .should.be.an.instanceOf Function
+        _after      .should.be.an.instanceOf Function
+        _afterEach      .should.be.an.instanceOf Function
+        _afterAll      .should.be.an.instanceOf Function
+        _xbefore      .should.be.an.instanceOf Function
+        _xbeforeEach      .should.be.an.instanceOf Function
+        _xbeforeAll      .should.be.an.instanceOf Function
+        _xafter      .should.be.an.instanceOf Function
+        _xafterEach      .should.be.an.instanceOf Function
+        _xafterAll      .should.be.an.instanceOf Function
 
     it 'defines create() to configure a new testing instance', (done) ->
 

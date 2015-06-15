@@ -76,10 +76,10 @@ describe 'Tester Runner', ->
 
             walker.reset @args
 
-            test_it '', -> 1
-            test_context '', ->
-                test_it '', -> 1
-                test_it.only 'this', ->
+            _it '', -> 1
+            _context '', ->
+                _it '', -> 1
+                _it.only 'this', ->
 
             runner.assignSkip dev.tree
 
@@ -100,13 +100,13 @@ describe 'Tester Runner', ->
                     resolve()
 
             walker.reset @args
-            test_it 'one', ->
-            test_context '', ->
-                test_it 'two', ->
-                test_it 'three', ->
-            test_context '', ->
-                test_it 'four', ->
-                test_it 'five', ->
+            _it 'one', ->
+            _context '', ->
+                _it 'two', ->
+                _it 'three', ->
+            _context '', ->
+                _it 'four', ->
+                _it 'five', ->
 
 
             runner.recurse @args.root, @args.config, {}, dev.tree
@@ -117,26 +117,26 @@ describe 'Tester Runner', ->
 
         beforeEach (done) ->
             walker.reset @args
-            test_before -> 1
-            test_before -> 2
-            test_beforeEach -> 3
-            test_beforeEach -> 4
-            test_context 'context1', =>
-                test_before -> 5
-                test_before -> 6
-                test_beforeEach -> 7
-                test_it 'test1', -> 'TEST1'
+            _before -> 1
+            _before -> 2
+            _beforeEach -> 3
+            _beforeEach -> 4
+            _context 'context1', =>
+                _before -> 5
+                _before -> 6
+                _beforeEach -> 7
+                _it 'test1', -> 'TEST1'
                 @testNode1 = dev.walkStep.step.node.children[0]
-                test_it 'test2', -> 'TEST2'
+                _it 'test2', -> 'TEST2'
                 @testNode2 = dev.walkStep.step.node.children[1]
-                test_afterEach -> 8
-                test_afterEach -> 9
-                test_after -> 10
-                test_after -> 11
-            test_afterEach -> 12
-            test_afterEach -> 13
-            test_after -> 14
-            test_after -> 15
+                _afterEach -> 8
+                _afterEach -> 9
+                _after -> 10
+                _after -> 11
+            _afterEach -> 12
+            _afterEach -> 13
+            _after -> 14
+            _after -> 15
             done()
 
 
@@ -290,7 +290,7 @@ describe 'Tester Runner', ->
                 @testNode1.fn = (done) ->
                     @timeout 10
                     thing = {a:1}
-                    test_wait(thing)
+                    _wait(thing)
                     done()
 
                 step = runner.createStep 'info', 'test', @testNode1, @testNode1.fn
@@ -302,11 +302,11 @@ describe 'Tester Runner', ->
 
                 setTimeout (->
 
-                    should.exist test_see
-                    test_see.thing.should.eql a: 1
+                    should.exist _see
+                    _see.thing.should.eql a: 1
                     should.exist dev.runStep.waiting
                     should.not.exist step.node.error
-                    test_see.done
+                    _see.done
                     done()
 
                 ), 20

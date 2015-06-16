@@ -184,6 +184,11 @@ context('nested', function(){
 
 #### `wait()` & `see.*`
 
+#### `trace.filter`
+
+* trace.filter = true or false
+* overrides showTrace settings from within test, hook or context
+
 ## Module Injection
 
 ## Function Expectations

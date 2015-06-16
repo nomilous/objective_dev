@@ -54,6 +54,7 @@ describe 'Module Root', ->
                 reporter: 'Default'
                 runAll: false
                 fullTrace: false
+                filterTrace: false
 
             done()
 

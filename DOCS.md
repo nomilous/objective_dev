@@ -178,13 +178,13 @@ context('nested', function(){
 
 ### Special Operators
 
-#### `help()`
+#### `doc()`
 
 ```javascript
 
-it('can display core module markdown help in console', function(http) {
+it('can display core module markdown doc fragments in console', function(child_process) {
 
-  help( http.Server )
+  doc( child_process.execFileSync )
   // no pager yet (maybe never?)
 
 })

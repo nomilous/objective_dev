@@ -184,8 +184,10 @@ context('nested', function(){
 
 it('can display core module markdown doc fragments in console', function(child_process) {
 
-  doc( child_process.execFileSync )
-  // no pager yet (maybe never?)
+  doc( child_process.execFileSync ) // no pager yet (maybe never?)
+  doc('path.parse') // string also works
+  doc() //list
+  doc.list(child_process)
 
 })
 

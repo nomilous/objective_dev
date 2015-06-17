@@ -223,11 +223,12 @@ it("can get a trace from the mock's perspective", function(should) {
   Server.start();
 })
  ``` 
- #### `flush()`
 
 ##### on test faulure
 * trace = true or false switches stack trace on/of per test or context
 * trace.filter = true or false or /regex/ set trace filter per test or context
+
+#### `flush()`
 
 ## Module Injection
 

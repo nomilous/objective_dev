@@ -17,7 +17,7 @@ describe 'Integration Tests', ->
                 CHILD__UUID: {}
         @config = {}
 
-        dev.create @root, @config, (err) ->
+        dev.$$createInstance @root, @config, (err) ->
 
             return done(err) if err?
             done()

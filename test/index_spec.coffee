@@ -34,7 +34,7 @@ describe 'Module Root', ->
         _xafterEach      .should.be.an.instanceOf Function
         _xafterAll      .should.be.an.instanceOf Function
 
-    it 'defines create() to configure a new testing instance', (done) ->
+    it 'defines $$createInstance() to configure a new testing instance', (done) ->
 
         root = 
             config:
@@ -42,7 +42,7 @@ describe 'Module Root', ->
 
         config = {}
 
-        dev.create root, config, (err) ->
+        dev.$$createInstance root, config, (err) ->
 
             return done (err) if err?
 

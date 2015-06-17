@@ -21,7 +21,7 @@ describe 'Tester Walker', ->
                 title: 'Objective Title'
             required: {}
 
-        dev.create @args.root, {}, -> done()
+        dev.$$createInstance @args.root, {}, -> done()
 
     beforeEach ->
         @args = 

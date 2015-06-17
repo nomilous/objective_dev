@@ -18,7 +18,7 @@ describe 'Main Handler', ->
 
     before (done) -> 
 
-        dev.create root, childConfig, done
+        dev.$$createInstance root, childConfig, done
 
     beforeEach ->
         walker.reset root: root, config: childConfig

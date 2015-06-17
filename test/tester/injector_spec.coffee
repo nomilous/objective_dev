@@ -23,7 +23,7 @@ describe 'Tester Injector', ->
         @findLocalModule = injector.findLocalModule
         @lstatSync = fs.lstatSync
 
-        dev.create @root, @config, done
+        dev.$$createInstance @root, @config, done
 
     after ->
         injector.findLocalModule = @findLocalModule

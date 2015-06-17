@@ -27,8 +27,10 @@
     "mkpath": "^0.1.0",
     "pad": "0.0.8",
     "shortid": "^2.2.2",
+    "underscore.string": "^3.1.1",
     "uuid": "^2.0.1",
-    "when": "^3.7.3"
+    "when": "^3.7.3",
+    "wordwrap": "^1.0.0"
   },
   "devDependencies": {
     "coffee-script": "^1.9.3",

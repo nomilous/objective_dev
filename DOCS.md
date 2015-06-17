@@ -178,7 +178,21 @@ context('nested', function(){
 
 ### Special Operators
 
-#### `flush()`
+#### `help()`
+
+* Display node api markdown docs or sections of docs among the test output.
+
+eg. 
+```javascript
+
+it('thing one', function(http) {
+
+  help( http.Server ) 
+
+})
+
+```
+
 
 #### `mock()`
 
@@ -209,6 +223,7 @@ it("can get a trace from the mock's perspective", function(should) {
   Server.start();
 })
  ``` 
+ #### `flush()`
 
 ##### on test faulure
 * trace = true or false switches stack trace on/of per test or context

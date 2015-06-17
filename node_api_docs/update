@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+rm *.markdown
+wget https://raw.githubusercontent.com/joyent/node/master/doc/api/_toc.markdown 
+for module in `cat _toc.markdown | 
+	       grep \\\[ | 
+	       grep -v \\\[$ | 
+	       sed s/.*\(// | 
+	       sed s/\.html\)//`
+do
+  echo $module
+  wget https://raw.githubusercontent.com/joyent/node/master/doc/api/$module.markdown
+done
+

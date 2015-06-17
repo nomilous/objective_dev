@@ -209,7 +209,7 @@ it('can display core module markdown help in console', function(http) {
 
 eg.
 ```javascript
-it("can get a trace from the mock's perspective", function(should) {
+it("can get a trace from the mock's perspective", function(Server, should) {
   Server.does({
     setRoutes: function(){
       trace( 0 , function(stackFrame) {

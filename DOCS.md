@@ -188,6 +188,7 @@ eg.
 it('can display core module markdown help in console', function(http) {
 
   help( http.Server )
+  // no pager yet (maybe never?)
 
 })
 

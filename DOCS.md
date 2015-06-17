@@ -180,9 +180,6 @@ context('nested', function(){
 
 #### `help()`
 
-* Display node api markdown docs or sections of docs among the test output.
-
-eg. 
 ```javascript
 
 it('can display core module markdown help in console', function(http) {

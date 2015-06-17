@@ -184,10 +184,35 @@ context('nested', function(){
 
 #### `wait()` & `see.*`
 
-#### `trace.filter`
+#### `trace()`
 
-* trace.filter = true or false
-* overrides showTrace settings from within test, hook or context
+##### in test
+* trace() prints a filtered stack trace
+* trace(false) prints an unfiltered stack trace
+* trace(function(frame, line, i){}) calls with each stack frame
+* trace(n)
+* trace(n, function)
+* trace(/regex/)
+* trace(/regex/,function)
+
+eg.
+```javascript
+it("can get a trace from the mock's perspective", function(should) {
+  Server.does({
+    setRoutes: function(){
+      trace( 0 , function(stackFrame) {
+        stackFrame.Function.toString().should.match(/THIS_FUNCTION/);
+        // console.log(stackFrame.This);
+      })
+    }
+  });
+  Server.start();
+})
+ ``` 
+
+##### on test faulure
+* trace = true or false switches stack trace on/of per test or context
+* trace.filter = true or false or /regex/ set trace filter per test or context
 
 ## Module Injection
 

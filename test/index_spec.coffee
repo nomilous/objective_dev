@@ -53,7 +53,7 @@ describe 'Module Root', ->
                 sourceDir: 'lib'
                 reporter: 'Default'
                 runAll: false
-                fullTrace: false
+                showTrace: false
                 filterTrace: false
 
             done()

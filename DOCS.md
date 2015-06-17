@@ -226,7 +226,7 @@ it("can get a trace from the mock's perspective", function(should) {
  ``` 
 
 ##### on test faulure
-* trace = true or false switches stack trace on/of per test or context
+* trace = true or false switches stack trace on/off per test or context
 * trace.filter = true or false or /regex/ set trace filter per test or context
 
 #### `flush()`

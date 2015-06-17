@@ -185,9 +185,9 @@ context('nested', function(){
 eg. 
 ```javascript
 
-it('can display markdown help in console', function(http) {
+it('can display core module markdown help in console', function(http) {
 
-  help( http.Server ) 
+  help( http.Server )
 
 })
 

@@ -7,7 +7,5 @@ for module in `cat _toc.markdown |
 	       sed s/.*\(// | 
 	       sed s/\.html\)//`
 do
-  echo $module
   wget https://raw.githubusercontent.com/joyent/node/master/doc/api/$module.markdown
 done
-

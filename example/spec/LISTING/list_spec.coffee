@@ -2,9 +2,11 @@ objective ->
 
     try
 
+        doc()   # view doc
         mock()  # make mockable
         wait()  # & see.* with repl
         flush() # flushes require cache and mocks back to test starting state
+        trace()
 
         it()
         it.only() # runs only this it (and others with .only)
@@ -27,6 +29,12 @@ objective ->
         after() # (afterAll) - also supports {each:fn,all:fn}
         afterEach()
         afterAll() # same as after
+
+
+
+
+
+        # pointless?
 
         xbefore()
         xbeforeEach()

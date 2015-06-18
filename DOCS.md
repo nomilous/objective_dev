@@ -15,7 +15,7 @@ objective --create-dev --js ## --json # Writes the config
 
 ```
 
-* It wrote the file `objective.js` containing the configs necessary to run <b>objective-dev</b>
+* It wrote the file `objective.js` containing the configs necessary to run <b>objective_dev</b>
 
 ```js
 // objective.js
@@ -28,7 +28,7 @@ objective({
     listen: '/tmp/socket-a9b74ee3-eef2-495e-827e-237728c0c452'
   },
   plugins: {
-    'objective-dev': {
+    'objective_dev': {
       testDir: 'spec',
       testAppend: '_spec', // spec dir might contain more than tests, how to match them
       sourceDir: 'lib'

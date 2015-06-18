@@ -1,2 +1,2 @@
-* example using objective-dev plugin
+* example using objective_dev plugin
 * see objective.coffee

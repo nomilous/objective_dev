@@ -5,7 +5,7 @@ objective 'Example Dev',
     description: ''
     repl: listen: '/tmp/socket-37e72020-a8ce-45cd-b8af-fd97eed3771e'
     plugins:
-        'objective-dev':      # {}
+        'objective_dev':      # {}
             sourceDir: 'src'  # non defaults.
             compileTo: 'lib'
             testDir: 'spec'
@@ -13,12 +13,9 @@ objective 'Example Dev',
             runAll: true
             showTrace: false
             filterTrace: true
-            # reporter: 'Dot'
+            # reporter: 'Default'
             reporters:
-                # Default: {}
                 Dot: {}
-            #     another:
-            #         with: 'config'
 
 
 .run (link, recurse, prompt) ->
@@ -34,7 +31,7 @@ objective 'Example Dev',
     link.root './node_modules/dependancy/objective'
 
     #
-    # Recurse the source and test directories, the plugin (objective-dev)
+    # Recurse the source and test directories, the plugin (objective_dev)
     # is listening to the recurse events with a twofold purpose:
     #
     # 1. to run the tests it finds
@@ -47,7 +44,7 @@ objective 'Example Dev',
     .then -> recurse ['spec', 'src'], createDir: true
 
     #
-    # Recurse has completed. Start the prompt. The plugin (objective-dev)
+    # Recurse has completed. Start the prompt. The plugin (objective_dev)
     # has installed some usefull utility commands accessable via the prompt.
     # 
     

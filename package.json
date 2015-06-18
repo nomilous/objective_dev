@@ -1,6 +1,6 @@
 {
-  "name": "objective-dev",
-  "version": "0.0.14",
+  "name": "objective_dev",
+  "version": "0.0.15",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/nomilous/objective-dev.git"
+    "url": "git://github.com/nomilous/objective_dev.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nomilous/objective-dev/issues"
+    "url": "https://github.com/nomilous/objective_dev/issues"
   },
-  "homepage": "https://github.com/nomilous/objective-dev",
+  "homepage": "https://github.com/nomilous/objective_dev",
   "dependencies": {
     "blessed": "^0.1.60",
     "colors": "^1.1.0",

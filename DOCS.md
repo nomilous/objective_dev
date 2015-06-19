@@ -247,6 +247,11 @@ thing.does({
     }
 });
 ```
+alternatively
+```js
+thing.does(function expectedFunction(){})
+thing.does(function another(){})
+```
 * The test will fail unless the expected funcitons are each called exactly once.
 * If they are expected to be called twice, use thing.does(..) twice to say so.
 

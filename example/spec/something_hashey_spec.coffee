@@ -26,7 +26,8 @@ objective ->
 
 
 
-    it 'passes', -> 
+    it 'passes', (http) ->
 
-        require 'ipso'
-        flush(true) # throw new Error ''
+        http.does ->
+
+        

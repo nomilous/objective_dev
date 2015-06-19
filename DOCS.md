@@ -258,7 +258,6 @@ thing.does(
   function get(){
     return mock('got').does(
       function have() {
-        /* 
       }
     );
   }

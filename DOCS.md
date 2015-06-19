@@ -237,6 +237,7 @@ Function expectations can only be created in <b>beforeEach</b>s and <b>tests</b>
 ### `.does()` and `.mock()`
 
 * These are both the same. They create function expectations.
+
 ```js
 thing.does({
     expectedFunction: function() {
@@ -251,6 +252,17 @@ alternatively
 ```js
 thing.does(function expectedFunction(){})
 thing.does(function another(){})
+// or
+thing.does(
+  function configure() {},
+  function get(){
+    return mock('got').does(
+      function have() {
+        /* 
+      }
+    );
+  }
+);
 ```
 * The test will fail unless the expected funcitons are each called exactly once.
 * If they are expected to be called twice, use thing.does(..) twice to say so.

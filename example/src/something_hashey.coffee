@@ -1,4 +1,4 @@
 module.exports = 
 
-    start: -> "#{one}":'one'
+    start: -> 
 

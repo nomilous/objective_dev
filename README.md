@@ -1,5 +1,9 @@
 # objective_dev
 
+# NOT READY YET
+
+Still some quirks! <br>
+
 An [objective](https://github.com/nomilous/objective) plugin for testing.
 
 [![Build Status](https://travis-ci.org/nomilous/objective_dev.svg)](https://travis-ci.org/nomilous/objective_dev)

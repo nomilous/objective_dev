@@ -1,6 +1,6 @@
 require '../_fake_objective'
 
-describe 'Tester Expector', ->
+describe.only 'Tester Expector', ->
 
     expector = require '../../lib/tester/expector'
     injector = require '../../lib/tester/injector'

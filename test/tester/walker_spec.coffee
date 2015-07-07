@@ -16,7 +16,9 @@ describe 'Tester Walker', ->
         @original_runner = runner.run
 
         @args = 
-            root: config: uuid: 'ROOT_UUID'
+            root: 
+                config: uuid: 'ROOT_UUID'
+                recursor: -> then: (r) -> r()
             config: 
                 title: 'Objective Title'
             required: {}

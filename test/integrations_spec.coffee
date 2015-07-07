@@ -15,6 +15,7 @@ describe 'Integration Tests', ->
                 uuid: 'ROOT__UUID'
             children:
                 CHILD__UUID: {}
+            recursor: -> then: (r) -> r()
         @config = {}
 
         dev.$$createInstance @root, @config, (err) ->

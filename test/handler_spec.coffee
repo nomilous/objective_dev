@@ -12,6 +12,7 @@ describe 'Main Handler', ->
         config: uuid: 'YYY'
         children: CHILD_UUID: {}
         home: 'home'
+        recursor: -> then: (r) -> r()
 
     childConfig = 
         uuid: 'CHILD_UUID'

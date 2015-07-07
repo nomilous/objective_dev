@@ -1,6 +1,6 @@
 require '../_fake_objective'
 
-describe.only 'Tester Expector', ->
+describe 'Tester Expector', ->
 
     expector = require '../../lib/tester/expector'
     injector = require '../../lib/tester/injector'
@@ -76,7 +76,6 @@ describe.only 'Tester Expector', ->
                     called: {}
                     expected: {}
                     original: {}
-                    type: {}
 
 
     context 'mocking and validating', ->
@@ -241,7 +240,6 @@ describe.only 'Tester Expector', ->
                     expector.objects[@obj.$$mockid].object.should.eql @obj
                     functions = expector.objects[@obj.$$mockid].functions
 
-                    functions.type.should.eql
                     functions.expected.func.length.should.equal 1
                     functions.expected.func[0].fn().should.equal 'replaced'
                     functions.called.func.length.should.equal 0

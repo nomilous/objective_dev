@@ -200,7 +200,7 @@ describe 'Tester Runner', ->
 
             it 'sets the current step, the timer values and calls the step function', (done) ->
 
-                step = runner.createStep 'info', 'test', @testNode1, @testNode1.fn
+                step = runner.createStep 'info', 'test', @testNode1, @testNode1
                 reject = ->
                 resolve = ->
                     dev.runStep.step.node.str.should.equal 'test1'
@@ -221,7 +221,7 @@ describe 'Tester Runner', ->
                     done()
                     _done()
 
-                step = runner.createStep 'info', 'test', @testNode2, @testNode2.fn
+                step = runner.createStep 'info', 'test', @testNode2, @testNode2
                 reject = ->
                 resolve = ->
                 runner.runStep @args.root, @args.config, {}, step, resolve, reject
@@ -231,7 +231,7 @@ describe 'Tester Runner', ->
 
                 @testNode2.fn = (done) -> @timeout 10
 
-                step = runner.createStep 'info', 'test', @testNode1, @testNode2.fn
+                step = runner.createStep 'info', 'test', @testNode1, @testNode2
                 reject = ->
                 resolve = ->
                 runner.runStep @args.root, @args.config, {}, step, resolve, reject
@@ -245,7 +245,7 @@ describe 'Tester Runner', ->
 
                 hook = dev.tree.hooks.beforeEach[0]
                 fn = hook.fn = (done) -> @timeout 10
-                step = runner.createStep 'info', 'beforeEach', hook, fn
+                step = runner.createStep 'info', 'beforeEach', hook, hook
                 step.node =
                     children: [
                         child = {children: []}
@@ -267,13 +267,13 @@ describe 'Tester Runner', ->
 
                 hook = dev.tree.hooks.beforeEach[0]
                 hook.fn = -> @thing = 'X'
-                step1 = runner.createStep 'info', 'beforeEach', hook, hook.fn
+                step1 = runner.createStep 'info', 'beforeEach', hook, hook
 
                 @testNode2.fn = ->
                     @thing.should.equal 'X'
                     done()
 
-                step2 = runner.createStep 'info', 'test', @testNode2, @testNode2.fn
+                step2 = runner.createStep 'info', 'test', @testNode2, @testNode2
 
                 reject = ->
                 resolve = =>
@@ -293,7 +293,7 @@ describe 'Tester Runner', ->
                     _wait(thing)
                     done()
 
-                step = runner.createStep 'info', 'test', @testNode1, @testNode1.fn
+                step = runner.createStep 'info', 'test', @testNode1, @testNode1
 
                 reject = -> throw new Error 'shouldn\'t reject'
                 resolve = -> throw new Error 'shouldn\'t resolve'

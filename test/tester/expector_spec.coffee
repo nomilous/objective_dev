@@ -115,7 +115,7 @@ describe 'Tester Expector', ->
                 step.children = [
                     @child = {children:[]}
                 ]
-                runStep = runner.createStep {}, type, step, step.fn
+                runStep = runner.createStep {}, type, step, step
                 # runStep.node = dev.tree
                 runner.runStep @args.root, {}, {}, runStep, (->), ->
 

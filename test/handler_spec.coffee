@@ -153,7 +153,7 @@ describe 'Main Handler', ->
                 
                 _it 'test', -> _wait()
                 test = dev.tree.children[0]
-                step = runner.createStep 'info', 'test', test, test.fn
+                step = runner.createStep 'info', 'test', test, test
 
                 objective.onWarn = -> console.log arguments
                 reject = -> 

@@ -12,7 +12,7 @@ describe 'Main Handler', ->
         config: uuid: 'YYY'
         children: CHILD_UUID: {}
         home: 'home'
-        recursor: -> then: (r) -> r()
+        watcher: -> then: (r) -> r()
 
     childConfig = 
         uuid: 'CHILD_UUID'
@@ -35,7 +35,7 @@ describe 'Main Handler', ->
 
             handler.foundFile
                 root: root
-                path: 'something.else'
+                file: 'something.else'
                 ->
                     dev.roots.YYY.files.should.eql test: {}, source: {}
 
@@ -43,15 +43,15 @@ describe 'Main Handler', ->
 
             handler.foundFile
                 root: root
-                path: 'lib/something.js'
+                file: 'lib/something.js'
                 ->          
                     handler.foundFile
                         root: root
-                        path: 'test/something.js' # has no _test
+                        file: 'test/something.js' # has no _test
                         ->
                             handler.foundFile
                                 root: root
-                                path: 'test/something_test.js' # has no _test
+                                file: 'test/something_test.js' # has no _test
                                 ->
                                     dev.roots.YYY.files.should.eql
                                         source:
@@ -60,12 +60,14 @@ describe 'Main Handler', ->
                                                 base: 'something'
                                                 ext: '.js'
                                                 file: 'lib/something.js'
+                                                run: false
                                         test:
                                             'test/something_test.js':
                                                 type: 'test'
                                                 base: 'something_test'
                                                 ext: '.js'
                                                 file: 'test/something_test.js'
+                                                run: true
 
 
     context 'endRecurse()', ->
@@ -85,10 +87,10 @@ describe 'Main Handler', ->
 
             dev.roots.YYY.files = 
                 test:
-                    'test/one_test.js': {}
-                    'test/two_test.js': {}
-                    'test/three_test.js': {}
-                    'test/four_test.js': {}
+                    'test/one_test.js': run: true
+                    'test/two_test.js': run: true
+                    'test/three_test.js': run: true
+                    'test/four_test.js': run: true
 
             loaded = [];
 
@@ -145,7 +147,7 @@ describe 'Main Handler', ->
 
                 handler.changedFile
                     root: root,
-                    path: 'test/one_test.js'
+                    file: 'test/one_test.js'
                     ->
 
             it 'completes the wait() if re-running the waiting testfile', (done) ->
@@ -166,7 +168,7 @@ describe 'Main Handler', ->
                 
                 handler.changedFile
                     root: root,
-                    path: 'test/one_test.js'
+                    file: 'test/one_test.js'
                     ->
 
 
@@ -181,7 +183,7 @@ describe 'Main Handler', ->
 
                 handler.changedFile
                     root: root,
-                    path: 'test/one_test.js'
+                    file: 'test/one_test.js'
                     ->
 
 
@@ -195,7 +197,7 @@ describe 'Main Handler', ->
 
                 handler.changedFile
                     root: root,
-                    path: 'lib/one.js'
+                    file: 'lib/one.js'
                     ->
 
             it 'calls the corresponding test if present', (done) ->
@@ -211,7 +213,7 @@ describe 'Main Handler', ->
 
                 handler.changedFile
                     root: root,
-                    path: 'lib/one.js'
+                    file: 'lib/one.js'
                     ->
                         tries.should.eql ['home/test/one_test.js', 'home/test/one_test.coffee']
                         fs.lstatSync = orig

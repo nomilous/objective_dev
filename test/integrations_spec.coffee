@@ -15,7 +15,7 @@ describe 'Integration Tests', ->
                 uuid: 'ROOT__UUID'
             children:
                 CHILD__UUID: {}
-            recursor: -> then: (r) -> r()
+            watcher: -> then: (r) -> r()
         @config = {}
 
         dev.$$createInstance @root, @config, (err) ->
@@ -167,6 +167,8 @@ describe 'Integration Tests', ->
                 ]
                 done()
 
+            .catch done
+
             objective.promised.start()
 
 
@@ -231,12 +233,15 @@ describe 'Integration Tests', ->
                     'outer after all 1',
                     'outer after all 2'
                 ]
+
                 done()
+
+            .catch done
 
             objective.promised.start()
 
 
-        it 'only runs tests in only"d context', (done) ->
+        xit 'only runs tests in only"d context', (done) ->
 
             walker.reset @args
 
@@ -319,6 +324,8 @@ describe 'Integration Tests', ->
 
                 ]
                 done()
+
+            .catch done
 
             objective.promised.start()
 

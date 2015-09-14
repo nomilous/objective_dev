@@ -17,7 +17,7 @@ describe 'Tester Injector', ->
                 uuid: 'XYZ'
             home: 'home'
             children: CHILD_UUID: {}
-            recursor: -> then: (r) -> r()
+            watcher: -> then: (r) -> r()
         @config = 
             title: 'title'
             uuid: 'CHILD_UUID'

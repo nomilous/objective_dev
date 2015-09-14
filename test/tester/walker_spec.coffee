@@ -18,7 +18,7 @@ describe 'Tester Walker', ->
         @args = 
             root: 
                 config: uuid: 'ROOT_UUID'
-                recursor: -> then: (r) -> r()
+                watcher: -> then: (r) -> r()
             config: 
                 title: 'Objective Title'
             required: {}

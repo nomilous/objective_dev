@@ -39,7 +39,7 @@ describe 'Module Root', ->
         root = 
             config:
                 uuid: 'XXX'
-            recursor: -> then: (r) -> r()
+            watcher: -> then: (r) -> r()
 
         config = {}
 

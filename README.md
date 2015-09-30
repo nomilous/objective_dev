@@ -20,3 +20,5 @@ objective --create-dev # --js --json
 
 objective
 ```
+
+todo, make does = must, stub = can, spy remains spy

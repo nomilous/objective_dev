@@ -24,3 +24,9 @@ objective
 todo, make does = must, stub = can, spy remains spy
 
 todo, fix broken reload, sometimes running old test on changed, use --once for now 
+
+? todo, it(function() {to('reason'); and('additional info'); })
+
+todo, expectations fail if met out of sequence
+
+todo, does(ex,pec,tations).then(done);

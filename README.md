@@ -30,3 +30,7 @@ todo, fix broken reload, sometimes running old test on changed, use --once for n
 todo, expectations fail if met out of sequence
 
 todo, does(ex,pec,tations).then(done);
+
+todo, mock accepts promise
+
+todo, contextwide timeout adjustment
